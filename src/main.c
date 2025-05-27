@@ -1,4 +1,6 @@
+#include "drawrubikscube.h"
 #include "raylib.h"
+#include "rubikscube.h"
 #include <math.h>
 
 int main(void) {
@@ -27,6 +29,9 @@ int main(void) {
 
 	SetTargetFPS(60);
 
+	// Rubiks cube:
+	Cube* cube = createCube();
+
 	// Main game loop
 	while (!WindowShouldClose()) {
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
@@ -50,8 +55,8 @@ int main(void) {
 
 		float scroll = GetMouseWheelMove();
 		distance -= scroll;
-		if (distance <  2.0f)
-			distance = 2.0f;
+		/* if (distance <  2.0f) */
+		/* 	distance = 2.0f; */
 		if (distance > 20.0f)
 			distance = 20.0f;
 
@@ -72,7 +77,7 @@ int main(void) {
 
 			BeginMode3D(camera);
 
-			DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, RED);
+			DrawRubiksCube(cube);
 
 			EndMode3D();
 		}
@@ -80,5 +85,6 @@ int main(void) {
 	}
 
 	CloseWindow();
+	destroyCube(cube);
 	return 0;
 }
