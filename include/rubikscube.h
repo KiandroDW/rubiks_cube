@@ -1,3 +1,6 @@
+#ifndef RUBIKSCUBE
+#define RUBIKSCUBE
+
 #include "raylib.h"
 
 typedef struct {
@@ -21,3 +24,5 @@ typedef struct {
 Block* createBlock(Vector3 position);
 Cube* createCube();
 void destroyCube(Cube* cube);
+
+#endif
