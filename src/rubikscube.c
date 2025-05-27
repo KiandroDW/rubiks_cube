@@ -5,7 +5,7 @@ Block* createBlock(Vector3 position) {
 	/*
 	 *	Righthanded system: x = forwards, y = upwards, z = leftwards
 	 */
-	Colors colors;
+	Colors colors = {0};
 	if (position.x == 1) {
 		colors.front = GREEN;
 	} else if (position.x == -1) {
