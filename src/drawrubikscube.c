@@ -1,11 +1,10 @@
 #include "drawrubikscube.h"
-#include <stdio.h>
 
 #define COLISNULL(color) \
 	(color.r == 0 && color.g == 0 && color.b == 0 && color.a == 0)
 
 void DrawRubiksCube(Cube* cube) {
-	/* DrawCube((Vector3){0, 0, 0}, 3.0f, 3.0f, 3.0f, BLACK); // body */
+	DrawCube((Vector3){0, 0, 0}, 3.0f, 3.0f, 3.0f, BLACK); // body
 
 	const float planeHeight = 0.1f;
 	const float planeLength = 0.9f;
@@ -15,7 +14,7 @@ void DrawRubiksCube(Cube* cube) {
 			for (int k = -1; k <= 1; k++) {
 				Block* block = cube->blocks[i+1][j+1][k+1];
 				Colors colors = block->colors;
-				Vector3 center = block->position;
+				Vector3 center = (Vector3) {i, j, k};
 				Vector3 planeCenter = center;
 
 				planeCenter.x -= 0.5;

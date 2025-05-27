@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "rubikscube.h"
 #include <math.h>
+#include <stdio.h>
 
 int main(void) {
 	// Initialization
@@ -12,7 +13,7 @@ int main(void) {
 
 	// Define the camera
 	Camera camera = {0};
-	camera.position = (Vector3){10.0f, 0, 0};
+	camera.position = (Vector3){0, 0, 10.0f};
 	camera.target = (Vector3){0.0f, 0.0f, 0.0f};
 	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
 	camera.fovy = 45.0f;
@@ -20,8 +21,8 @@ int main(void) {
 
 	// Camera parameters
 	float distance = 10.f;
-	float yaw = 0.0f;
-	float pitch = 0.0f;
+	float yaw = 120.0f;
+	float pitch = 30.0f;
 	bool cursorLocked = false;
 
 	Vector3 cubePosition = {0.0f, 0.0f, 0.0f};
@@ -31,9 +32,15 @@ int main(void) {
 
 	// Rubiks cube:
 	Cube* cube = createCube();
+	int counter = 0;
 
 	// Main game loop
 	while (!WindowShouldClose()) {
+		counter++;
+		if (counter > 60) {
+			executeMove(cube, GetRandomValue(0, 11));
+			counter = 0;
+		}
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
 			DisableCursor();
 			cursorLocked = true;

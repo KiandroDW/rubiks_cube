@@ -13,7 +13,6 @@ typedef struct {
 } Colors;
 
 typedef struct {
-	Vector3 position;
 	Colors colors;
 } Block;
 
@@ -24,5 +23,31 @@ typedef struct {
 Block* createBlock(Vector3 position);
 Cube* createCube();
 void destroyCube(Cube* cube);
+
+typedef enum {
+	BACK,
+	DOWN,
+	FRONT,
+	LEFT,
+	RIGHT,
+	UP,
+	BACK_P,
+	DOWN_P,
+	FRONT_P,
+	LEFT_P,
+	RIGHT_P,
+	UP_P
+} Move;
+
+typedef enum {
+	CLOCKWISE,
+	COUNTERCLOCKWISE,
+	DOWNWARDS,
+	LEFTWARDS,
+	RIGHTWARDS,
+	UPWARDS
+} Rotation;
+
+void executeMove(Cube* cube, Move move);
 
 #endif
