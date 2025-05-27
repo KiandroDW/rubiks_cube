@@ -1,0 +1,13 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I",
+      "include/",
+      "src/main.c"
+    ],
+    "directory": "/home/kiandro/projects/rubiks_cube",
+    "file": "/home/kiandro/projects/rubiks_cube/src/main.c"
+  }
+]
