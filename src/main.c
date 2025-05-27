@@ -37,9 +37,8 @@ int main(void) {
 	// Main game loop
 	while (!WindowShouldClose()) {
 		counter++;
-		if (counter > 60) {
-			executeMove(cube, GetRandomValue(0, 11));
-			counter = 0;
+		if (counter == 200) {
+			shuffle(cube);
 		}
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
 			DisableCursor();

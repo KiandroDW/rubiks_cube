@@ -252,3 +252,27 @@ void executeMove(Cube* cube, Move move) {
 			break;
 	}
 }
+
+void shuffle(Cube* cube) {
+	int previous_previous = -1;
+	int previous_set = -1; // 0 = F, 1 = U, 2 = L, 3 = B, 4 = D, 5 = R
+	int chosen_set;
+	int chosen_form;
+
+	for (int i = 0; i < 25; i++) {
+		chosen_set = rand() % 6;
+		while (chosen_set == previous_set || chosen_set % 3 ==  previous_previous) {
+			chosen_set = rand() % 6;
+		}
+		chosen_form = rand() % 3;
+		if (chosen_form == 2) {
+			executeMove(cube, chosen_set * 2); // double move
+			executeMove(cube, chosen_set * 2);
+		} else {
+			executeMove(cube, chosen_set * 2 + chosen_form);
+		}
+
+		previous_previous = previous_set;
+	}
+	printf("\n");
+}

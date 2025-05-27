@@ -25,18 +25,18 @@ Cube* createCube();
 void destroyCube(Cube* cube);
 
 typedef enum {
-	BACK,
-	DOWN,
 	FRONT,
-	LEFT,
-	RIGHT,
-	UP,
-	BACK_P,
-	DOWN_P,
 	FRONT_P,
+	UP,
+	UP_P,
+	LEFT,
 	LEFT_P,
-	RIGHT_P,
-	UP_P
+	BACK,
+	BACK_P,
+	DOWN,
+	DOWN_P,
+	RIGHT,
+	RIGHT_P
 } Move;
 
 typedef enum {
@@ -49,5 +49,7 @@ typedef enum {
 } Rotation;
 
 void executeMove(Cube* cube, Move move);
+
+void shuffle(Cube* cube);
 
 #endif
