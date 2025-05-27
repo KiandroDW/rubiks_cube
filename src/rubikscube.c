@@ -7,17 +7,17 @@ Block* createBlock(Vector3 position) {
 	 */
 	Colors colors;
 	if (position.x == 1) {
-		colors.right = GREEN;
+		colors.front = GREEN;
 	} else if (position.x == -1) {
-		colors.left = BLUE;
+		colors.back = BLUE;
 	}
 	if (position.y == 1) {
-		colors.back = WHITE;
+		colors.up = WHITE;
 	} else if (position.y == -1) {
-		colors.front = YELLOW;
+		colors.down = YELLOW;
 	}
 	if (position.z == 1) {
-		colors.right = ORANGE;
+		colors.left = ORANGE;
 	} else if (position.z == -1) {
 		colors.right = RED;
 	}
@@ -33,7 +33,7 @@ Cube* createCube() {
 		for (int j = -1; j <= 1; j++) {
 			for (int k = -1; k <= 1; k ++) {
 				Vector3 pos = {i, j, k};
-				cube->blocks[i][j][k] = createBlock(pos);
+				cube->blocks[i+1][j+1][k+1] = createBlock(pos);
 			}
 		}
 	}
@@ -44,7 +44,7 @@ void destroyCube(Cube *cube) {
 	for (int i = -1; i <= 1; i++) {
 		for (int j = -1; j <= 1; j++) {
 			for (int k = -1; k <= 1; k ++) {
-				free(cube->blocks[i][j][k]);
+				free(cube->blocks[i+1][j+1][k+1]);
 			}
 		}
 	}
