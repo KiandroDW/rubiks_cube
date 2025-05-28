@@ -2,7 +2,6 @@
 #include "raylib.h"
 #include "rubikscube.h"
 #include <math.h>
-#include <stdio.h>
 
 int main(void) {
 	// Initialization
@@ -32,14 +31,76 @@ int main(void) {
 
 	// Rubiks cube:
 	Cube* cube = createCube();
-	int counter = 0;
 
 	// Main game loop
 	while (!WindowShouldClose()) {
-		counter++;
-		if (counter == 200) {
+		if(IsKeyPressed(KEY_R)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				executeMove(cube, RIGHT_P);
+			} else {
+				executeMove(cube, RIGHT);
+			}
+		}
+		if(IsKeyPressed(KEY_L)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				executeMove(cube, LEFT_P);
+			} else {
+				executeMove(cube, LEFT);
+			}
+		}
+		if(IsKeyPressed(KEY_U)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				executeMove(cube, UP_P);
+			} else {
+				executeMove(cube, UP);
+			}
+		}
+		if(IsKeyPressed(KEY_D)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				executeMove(cube, DOWN_P);
+			} else {
+				executeMove(cube, DOWN);
+			}
+		}
+		if(IsKeyPressed(KEY_F)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				executeMove(cube, FRONT_P);
+			} else {
+				executeMove(cube, FRONT);
+			}
+		}
+		if(IsKeyPressed(KEY_B)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				executeMove(cube, BACK_P);
+			} else {
+				executeMove(cube, BACK);
+			}
+		}
+		if(IsKeyPressed(KEY_X)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				rotateCube(cube, COUNTERCLOCKWISE);
+			} else {
+				rotateCube(cube, CLOCKWISE);
+			}
+		}
+		if(IsKeyPressed(KEY_Y)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				rotateCube(cube, LEFTWARDS);
+			} else {
+				rotateCube(cube, RIGHTWARDS);
+			}
+		}
+		if(IsKeyPressed(KEY_W)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				rotateCube(cube, DOWNWARDS);
+			} else {
+				rotateCube(cube, UPWARDS);
+			}
+		}
+		if(IsKeyPressed(KEY_SPACE)) {
 			shuffle(cube);
 		}
+
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
 			DisableCursor();
 			cursorLocked = true;
@@ -61,8 +122,8 @@ int main(void) {
 
 		float scroll = GetMouseWheelMove();
 		distance -= scroll;
-		/* if (distance <  2.0f) */
-		/* 	distance = 2.0f; */
+		if (distance <  2.0f)
+			distance = 2.0f;
 		if (distance > 20.0f)
 			distance = 20.0f;
 

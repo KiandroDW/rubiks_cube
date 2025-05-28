@@ -276,3 +276,42 @@ void shuffle(Cube* cube) {
 	}
 	printf("\n");
 }
+
+void rotateCube(Cube* cube, Rotation rotation) {
+	switch (rotation) {
+		case CLOCKWISE:
+			rotateYZplaneClockwise(cube, 0);
+			rotateYZplaneClockwise(cube, 1);
+			rotateYZplaneClockwise(cube, 2);
+			break;
+		case COUNTERCLOCKWISE:
+			rotateYZplaneCounterClockwise(cube, 0);
+			rotateYZplaneCounterClockwise(cube, 1);
+			rotateYZplaneCounterClockwise(cube, 2);
+			break;
+		case DOWNWARDS:
+			rotateXYplaneDown(cube, 0);
+			rotateXYplaneDown(cube, 1);
+			rotateXYplaneDown(cube, 2);
+			break;
+		case UPWARDS:
+			rotateXYplaneUp(cube, 0);
+			rotateXYplaneUp(cube, 1);
+			rotateXYplaneUp(cube, 2);
+			break;
+		case LEFTWARDS:
+			rotateXZplaneLeft(cube, 0);
+			rotateXZplaneLeft(cube, 1);
+			rotateXZplaneLeft(cube, 2);
+			break;
+		case RIGHTWARDS:
+			rotateXZplaneRight(cube, 0);
+			rotateXZplaneRight(cube, 1);
+			rotateXZplaneRight(cube, 2);
+			break;
+		default:
+			printf("You broke it :(");
+			break;
+
+	}
+};

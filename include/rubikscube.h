@@ -50,6 +50,8 @@ typedef enum {
 
 void executeMove(Cube* cube, Move move);
 
+void rotateCube(Cube* cube, Rotation rotation);
+
 void shuffle(Cube* cube);
 
 #endif
