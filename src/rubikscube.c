@@ -1,4 +1,5 @@
 #include "rubikscube.h"
+#include "rotatecube.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -207,48 +208,8 @@ void rotateYZplaneCounterClockwise(Cube* cube, int plane) {
 	}
 }
 
-void executeMove(Cube* cube, Move move, float pitch) {
+void executeMove(Cube* cube, Move move) {
 	Move moves[12] = {FRONT, FRONT_P, UP, UP_P, LEFT, LEFT_P, BACK, BACK_P, DOWN, DOWN_P, RIGHT, RIGHT_P};
-	Move temp[12];
-
-	if (pitch >= -45 && pitch < 45) {
-		// default
-		for (int i = 0; i < 12; i++) {
-			temp[i] = moves[i];
-		}
-	} else if (pitch > 45) {
-		// You need to do move F when you press D
-		temp[0] = moves[8]; // D
-		// ...
-		temp[1] = moves[9]; // D'
-		temp[2] = moves[0]; // F
-		temp[3] = moves[1]; // F'
-		temp[4] = moves[4]; // L
-		temp[5] = moves[5]; // L'
-		temp[6] = moves[2]; // U
-		temp[7] = moves[3]; // U'
-		temp[8] = moves[6]; // B
-		temp[9] = moves[7]; // B'
-		temp[10] = moves[10]; // R
-		temp[11] = moves[11]; // R'
-	} else {
-		temp[0] = moves[2]; // U
-		temp[1] = moves[3]; // U'
-		temp[2] = moves[6]; // B
-		temp[3] = moves[7]; // B'
-		temp[4] = moves[4]; // L
-		temp[5] = moves[5]; // L'
-		temp[6] = moves[6]; // D
-		temp[7] = moves[7]; // D'
-		temp[8] = moves[0]; // F
-		temp[9] = moves[1]; // F'
-		temp[10] = moves[10]; // R
-		temp[11] = moves[11]; // R'
-	}
-
-	for (int i = 0; i < 12; i++) {
-		moves[i] = temp[i];
-	}
 
 	int status = 0;
 	if (move == moves[0]) {
@@ -294,10 +255,10 @@ void shuffle(Cube* cube) {
 		}
 		chosen_form = rand() % 3;
 		if (chosen_form == 2) {
-			executeMove(cube, chosen_set * 2, 0.0f); // double move
-			executeMove(cube, chosen_set * 2, 0.0f);
+			executeMove(cube, chosen_set * 2); // double move
+			executeMove(cube, chosen_set * 2);
 		} else {
-			executeMove(cube, chosen_set * 2 + chosen_form, 0.0f);
+			executeMove(cube, chosen_set * 2 + chosen_form);
 		}
 
 		previous_previous = previous_set;
@@ -305,40 +266,70 @@ void shuffle(Cube* cube) {
 	printf("\n");
 }
 
-void rotateCube(Cube* cube, Rotation rotation) {
+void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 	switch (rotation) {
 		case CLOCKWISE:
+			if (anim->axis.y == 1) {
+				anim->layer = - anim->layer;
+				anim->angle = - anim->angle;
+			}
+			anim->axis = (Vector3) {anim->axis.x, anim->axis.z, anim->axis.y};
 			rotateYZplaneClockwise(cube, 0);
 			rotateYZplaneClockwise(cube, 1);
 			rotateYZplaneClockwise(cube, 2);
 			break;
 		case COUNTERCLOCKWISE:
+			if (anim->axis.z == 1) {
+				anim->layer = - anim->layer;
+				anim->angle = - anim->angle;
+			}
+			anim->axis = (Vector3) {anim->axis.x, anim->axis.z, anim->axis.y};
 			rotateYZplaneCounterClockwise(cube, 0);
 			rotateYZplaneCounterClockwise(cube, 1);
 			rotateYZplaneCounterClockwise(cube, 2);
 			break;
 		case DOWNWARDS:
+			if (anim->axis.x == 1) {
+				anim->layer = - anim->layer;
+				anim->angle = - anim->angle;
+			}
+			anim->axis = (Vector3) {anim->axis.y, anim->axis.x, anim->axis.z};
 			rotateXYplaneDown(cube, 0);
 			rotateXYplaneDown(cube, 1);
 			rotateXYplaneDown(cube, 2);
 			break;
 		case UPWARDS:
+			if (anim->axis.y == 1) {
+				anim->layer = - anim->layer;
+				anim->angle = - anim->angle;
+			}
+			anim->axis = (Vector3) {anim->axis.y, anim->axis.x, anim->axis.z};
 			rotateXYplaneUp(cube, 0);
 			rotateXYplaneUp(cube, 1);
 			rotateXYplaneUp(cube, 2);
 			break;
 		case LEFTWARDS:
+			if (anim->axis.z == 1) {
+				anim->layer = - anim->layer;
+				anim->angle = - anim->angle;
+			}
+			anim->axis = (Vector3) {anim->axis.z, anim->axis.y, anim->axis.x};
 			rotateXZplaneLeft(cube, 0);
 			rotateXZplaneLeft(cube, 1);
 			rotateXZplaneLeft(cube, 2);
 			break;
 		case RIGHTWARDS:
+			if (anim->axis.x == 1) {
+				anim->layer = - anim->layer;
+				anim->angle = - anim->angle;
+			}
+			anim->axis = (Vector3) {anim->axis.z, anim->axis.y, anim->axis.x};
 			rotateXZplaneRight(cube, 0);
 			rotateXZplaneRight(cube, 1);
 			rotateXZplaneRight(cube, 2);
 			break;
 		default:
-			printf("You broke it :(");
+			printf("You broke it :(\n");
 			break;
 
 	}

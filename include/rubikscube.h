@@ -4,6 +4,16 @@
 #include "raylib.h"
 
 typedef struct {
+	bool rotating;
+	int layer;
+	float angle;
+	float direction; // -1 or 1
+	Vector3 axis;
+	bool finished;
+	int side; // -1 => from under, 0 => straight on, 1 => from above
+} RotationAnimation;
+
+typedef struct {
 	Color back;
 	Color down;
 	Color front;
@@ -48,9 +58,9 @@ typedef enum {
 	UPWARDS
 } Rotation;
 
-void executeMove(Cube* cube, Move move, float pitch);
+void executeMove(Cube* cube, Move move);
 
-void rotateCube(Cube* cube, Rotation rotation);
+void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* rotationAnimation);
 
 void shuffle(Cube* cube);
 
