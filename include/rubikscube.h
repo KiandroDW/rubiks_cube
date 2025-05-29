@@ -48,7 +48,7 @@ typedef enum {
 	UPWARDS
 } Rotation;
 
-void executeMove(Cube* cube, Move move);
+void executeMove(Cube* cube, Move move, float pitch);
 
 void rotateCube(Cube* cube, Rotation rotation);
 

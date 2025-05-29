@@ -207,49 +207,77 @@ void rotateYZplaneCounterClockwise(Cube* cube, int plane) {
 	}
 }
 
-void executeMove(Cube* cube, Move move) {
+void executeMove(Cube* cube, Move move, float pitch) {
+	Move moves[12] = {FRONT, FRONT_P, UP, UP_P, LEFT, LEFT_P, BACK, BACK_P, DOWN, DOWN_P, RIGHT, RIGHT_P};
+	Move temp[12];
+
+	if (pitch >= -45 && pitch < 45) {
+		// default
+		for (int i = 0; i < 12; i++) {
+			temp[i] = moves[i];
+		}
+	} else if (pitch > 45) {
+		// You need to do move F when you press D
+		temp[0] = moves[8]; // D
+		// ...
+		temp[1] = moves[9]; // D'
+		temp[2] = moves[0]; // F
+		temp[3] = moves[1]; // F'
+		temp[4] = moves[4]; // L
+		temp[5] = moves[5]; // L'
+		temp[6] = moves[2]; // U
+		temp[7] = moves[3]; // U'
+		temp[8] = moves[6]; // B
+		temp[9] = moves[7]; // B'
+		temp[10] = moves[10]; // R
+		temp[11] = moves[11]; // R'
+	} else {
+		temp[0] = moves[2]; // U
+		temp[1] = moves[3]; // U'
+		temp[2] = moves[6]; // B
+		temp[3] = moves[7]; // B'
+		temp[4] = moves[4]; // L
+		temp[5] = moves[5]; // L'
+		temp[6] = moves[6]; // D
+		temp[7] = moves[7]; // D'
+		temp[8] = moves[0]; // F
+		temp[9] = moves[1]; // F'
+		temp[10] = moves[10]; // R
+		temp[11] = moves[11]; // R'
+	}
+
+	for (int i = 0; i < 12; i++) {
+		moves[i] = temp[i];
+	}
+
 	int status = 0;
-	switch (move) {
-		case RIGHT_P:
-			rotateXYplaneDown(cube, 0);
-			break;
-		case LEFT:
-			rotateXYplaneDown(cube, 2);
-			break;
-		case LEFT_P:
-			rotateXYplaneUp(cube, 2);
-			break;
-		case RIGHT:
-			rotateXYplaneUp(cube, 0);
-			break;
-		case UP:
-			rotateXZplaneLeft(cube, 2);
-			break;
-		case DOWN_P:
-			rotateXZplaneLeft(cube, 0);
-			break;
-		case DOWN:
-			rotateXZplaneRight(cube, 0);
-			break;
-		case UP_P:
-			rotateXZplaneRight(cube, 2);
-			break;
-		case FRONT:
-			rotateYZplaneClockwise(cube, 2);
-			break;
-		case BACK_P:
-			rotateYZplaneClockwise(cube, 0);
-			break;
-		case BACK:
-			rotateYZplaneCounterClockwise(cube, 0);
-			break;
-		case FRONT_P:
-			rotateYZplaneCounterClockwise(cube, 2);
-			break;
-		default:
-			printf("You managed to break it");
-			status = 2;
-			break;
+	if (move == moves[0]) {
+		rotateYZplaneClockwise(cube, 2);
+	} else if (move == moves[1]) {
+		rotateYZplaneCounterClockwise(cube, 2);
+	} else if (move == moves[2]) {
+		rotateXZplaneLeft(cube, 2);
+	} else if (move == moves[3]) {
+		rotateXZplaneRight(cube, 2);
+	} else if (move == moves[4]) {
+		rotateXYplaneDown(cube, 2);
+	} else if (move == moves[5]) {
+		rotateXYplaneUp(cube, 2);
+	} else if (move == moves[6]) {
+		rotateYZplaneCounterClockwise(cube, 0);
+	} else if (move == moves[7]) {
+		rotateYZplaneClockwise(cube, 0);
+	} else if (move == moves[8]) {
+		rotateXZplaneRight(cube, 0);
+	} else if (move == moves[9]) {
+		rotateXZplaneLeft(cube, 0);
+	} else if (move == moves[10]) {
+		rotateXYplaneUp(cube, 0);
+	} else if (move == moves[11]) {
+		rotateXYplaneDown(cube, 0);
+	} else {
+		printf("You managed to break it");
+		status = 2;
 	}
 }
 
@@ -266,10 +294,10 @@ void shuffle(Cube* cube) {
 		}
 		chosen_form = rand() % 3;
 		if (chosen_form == 2) {
-			executeMove(cube, chosen_set * 2); // double move
-			executeMove(cube, chosen_set * 2);
+			executeMove(cube, chosen_set * 2, 0.0f); // double move
+			executeMove(cube, chosen_set * 2, 0.0f);
 		} else {
-			executeMove(cube, chosen_set * 2 + chosen_form);
+			executeMove(cube, chosen_set * 2 + chosen_form, 0.0f);
 		}
 
 		previous_previous = previous_set;

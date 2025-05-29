@@ -36,44 +36,44 @@ int main(void) {
 	while (!WindowShouldClose()) {
 		if(IsKeyPressed(KEY_R)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				executeMove(cube, RIGHT_P);
+				executeMove(cube, RIGHT_P, pitch);
 			} else {
-				executeMove(cube, RIGHT);
+				executeMove(cube, RIGHT, pitch);
 			}
 		}
 		if(IsKeyPressed(KEY_L)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				executeMove(cube, LEFT_P);
+				executeMove(cube, LEFT_P, pitch);
 			} else {
-				executeMove(cube, LEFT);
+				executeMove(cube, LEFT, pitch);
 			}
 		}
 		if(IsKeyPressed(KEY_U)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				executeMove(cube, UP_P);
+				executeMove(cube, UP_P, pitch);
 			} else {
-				executeMove(cube, UP);
+				executeMove(cube, UP, pitch);
 			}
 		}
 		if(IsKeyPressed(KEY_D)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				executeMove(cube, DOWN_P);
+				executeMove(cube, DOWN_P, pitch);
 			} else {
-				executeMove(cube, DOWN);
+				executeMove(cube, DOWN, pitch);
 			}
 		}
 		if(IsKeyPressed(KEY_F)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				executeMove(cube, FRONT_P);
+				executeMove(cube, FRONT_P, pitch);
 			} else {
-				executeMove(cube, FRONT);
+				executeMove(cube, FRONT, pitch);
 			}
 		}
 		if(IsKeyPressed(KEY_B)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				executeMove(cube, BACK_P);
+				executeMove(cube, BACK_P, pitch);
 			} else {
-				executeMove(cube, BACK);
+				executeMove(cube, BACK, pitch);
 			}
 		}
 		if(IsKeyPressed(KEY_X)) {
@@ -114,10 +114,19 @@ int main(void) {
 			yaw -= mouseDelta.x * 0.5f;
 			pitch += mouseDelta.y * 0.5f;
 
-			if (pitch > 89.0f)
+			if (yaw < 45) {
+				yaw = 135;
+				rotateCube(cube, RIGHTWARDS);
+			} else if (yaw > 135) {
+				yaw = 45;
+				rotateCube(cube, LEFTWARDS);
+			}
+
+			if (pitch > 89)
 				pitch = 89.0f;
-			if (pitch < -89.0f)
-				pitch = -89.0f;
+			if (pitch < -89)
+				pitch = -89.f;
+
 		}
 
 		float scroll = GetMouseWheelMove();
