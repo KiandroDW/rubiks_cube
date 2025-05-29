@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(void) {
+int main(int argc, char* argv[]) {
 	// Initialization
 	const int screenWidth = 800;
 	const int screenHeight = 450;
@@ -33,7 +33,12 @@ int main(void) {
 	SetTargetFPS(60);
 
 	// Rubiks cube:
-	Cube* cube = createCube();
+	Cube* cube;
+	if (argc > 1) {
+		cube = createCube(atoi(argv[1]));
+	} else {
+		cube = createCube(3);
+	}
 	RotationAnimation* rotationAnimation = malloc(sizeof(RotationAnimation));
 	rotationAnimation->rotating = false;
 	rotationAnimation->side = 0;
@@ -44,54 +49,54 @@ int main(void) {
 		if(IsKeyPressed(KEY_R)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, RIGHT_P);
+					StartRotation(rotationAnimation, RIGHT_P, cube->side);
 				} else {
-					StartRotation(rotationAnimation, RIGHT);
+					StartRotation(rotationAnimation, RIGHT, cube->side);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_L)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, LEFT_P);
+					StartRotation(rotationAnimation, LEFT_P, cube->side);
 				} else {
-					StartRotation(rotationAnimation, LEFT);
+					StartRotation(rotationAnimation, LEFT, cube->side);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_U)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, UP_P);
+					StartRotation(rotationAnimation, UP_P, cube->side);
 				} else {
-					StartRotation(rotationAnimation, UP);
+					StartRotation(rotationAnimation, UP, cube->side);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_D)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, DOWN_P);
+					StartRotation(rotationAnimation, DOWN_P, cube->side);
 				} else {
-					StartRotation(rotationAnimation, DOWN);
+					StartRotation(rotationAnimation, DOWN, cube->side);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_F)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, FRONT_P);
+					StartRotation(rotationAnimation, FRONT_P, cube->side);
 				} else {
-					StartRotation(rotationAnimation, FRONT);
+					StartRotation(rotationAnimation, FRONT, cube->side);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_B)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, BACK_P);
+					StartRotation(rotationAnimation, BACK_P, cube->side);
 				} else {
-					StartRotation(rotationAnimation, BACK);
+					StartRotation(rotationAnimation, BACK, cube->side);
 				}
 			}
 		}
@@ -153,11 +158,11 @@ int main(void) {
 		}
 
 		float scroll = GetMouseWheelMove();
-		distance -= scroll;
-		if (distance <  2.0f)
-			distance = 2.0f;
-		if (distance > 20.0f)
-			distance = 20.0f;
+		distance -= scroll * cube->side;
+		if (distance <  cube->side * 1.2f)
+			distance = cube->side * 1.2f;
+		if (distance > cube->side * 6.0f)
+			distance = cube->side * 6.0f;
 
 
 		float yawRad = yaw * DEG2RAD;

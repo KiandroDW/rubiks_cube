@@ -1,7 +1,7 @@
 #include "drawrubikscube.h"
 #include "raylib.h"
 #include "rlgl.h"
-#include "rotatecube.h"
+#include "rubikscube.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -12,57 +12,29 @@ void DrawRubiksCube(Cube* cube,  RotationAnimation* anim) {
 	const float planeHeight = 0.1f;
 	const float planeLength = 0.9f;
 
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			for (int k = -1; k <= 1; k++) {
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			for (int k = 0; k < cube->side; k++) {
 				rlPushMatrix();
 				if (anim->rotating == true) {
 					int layer = anim->layer;
-					if (anim->side == 0) {
-						if (anim->axis.x && i == layer ||
-							anim->axis.y && j == layer ||
-							anim->axis.z && k == layer) {
-							Vector3 pivot = {0};
-							if (anim->axis.x != 0) pivot = (Vector3){anim->layer, 0, 0};
-							if (anim->axis.y != 0) pivot = (Vector3){0, anim->layer, 0};
-							if (anim->axis.z != 0) pivot = (Vector3){0, 0, anim->layer};
+					if (anim->axis.x && i == layer ||
+						anim->axis.y && j == layer ||
+						anim->axis.z && k == layer) {
+						Vector3 pivot = {0};
+						if (anim->axis.x != 0) pivot = (Vector3){anim->layer, 0, 0};
+						if (anim->axis.y != 0) pivot = (Vector3){0, anim->layer, 0};
+						if (anim->axis.z != 0) pivot = (Vector3){0, 0, anim->layer};
 
-							rlTranslatef(pivot.x, pivot.y, pivot.z);
-							rlRotatef(anim->angle, anim->axis.x, anim->axis.y, anim->axis.z);
-							rlTranslatef(-pivot.x, -pivot.y, -pivot.z);
-						}
-					} else if (anim -> side == 1) {
-						if (anim->axis.y && -i == layer ||
-							anim->axis.x && j == layer ||
-							anim->axis.z && k == layer) {
-							Vector3 pivot = {0};
-							if (anim->axis.y != 0) pivot = (Vector3){-anim->layer, 0, 0};
-							if (anim->axis.x != 0) pivot = (Vector3){0, anim->layer, 0};
-							if (anim->axis.z != 0) pivot = (Vector3){0, 0, anim->layer};
-
-							rlTranslatef(pivot.x, pivot.y, pivot.z);
-							rlRotatef(anim->angle, anim->axis.y, anim->axis.x, anim->axis.z);
-							rlTranslatef(-pivot.x, -pivot.y, -pivot.z);
-						}
-					} else {
-						if (anim->axis.y && i == layer ||
-							anim->axis.x && -j == layer ||
-							anim->axis.z && k == layer) {
-							Vector3 pivot = {0};
-							if (anim->axis.y != 0) pivot = (Vector3){anim->layer, 0, 0};
-							if (anim->axis.x != 0) pivot = (Vector3){0, -anim->layer, 0};
-							if (anim->axis.z != 0) pivot = (Vector3){0, 0, anim->layer};
-
-							rlTranslatef(pivot.x, pivot.y, pivot.z);
-							rlRotatef(anim->angle, anim->axis.y, anim->axis.x, anim->axis.z);
-							rlTranslatef(-pivot.x, -pivot.y, -pivot.z);
-						}
+						rlTranslatef(pivot.x, pivot.y, pivot.z);
+						rlRotatef(anim->angle, anim->axis.x, anim->axis.y, anim->axis.z);
+						rlTranslatef(-pivot.x, -pivot.y, -pivot.z);
 					}
 				}
-				DrawCube((Vector3) {i, j, k}, 1.0f, 1.0f, 1.0f, BLACK);
-				Block* block = cube->blocks[i+1][j+1][k+1];
+				Vector3 center = (Vector3) {i - (cube->side - 1) / 2.0f , j - (cube->side - 1) / 2.0f, k - (cube->side - 1) / 2.0f};
+				DrawCube(center, 1.0f, 1.0f, 1.0f, BLACK);
+				Block* block = ELEMENTAT(cube, i, j, k);
 				Colors colors = block->colors;
-				Vector3 center = (Vector3) {i, j, k};
 				Vector3 planeCenter = center;
 
 				planeCenter.x -= 0.5;

@@ -2,6 +2,7 @@
 #define RUBIKSCUBE
 
 #include "raylib.h"
+#define ELEMENTAT(cube, i, j, k) cube->blocks[i * cube->side * cube->side + j * cube->side + k]
 
 typedef struct {
 	bool rotating;
@@ -27,11 +28,12 @@ typedef struct {
 } Block;
 
 typedef struct {
-	Block* blocks[3][3][3];
+	int side;
+	Block** blocks;
 } Cube;
 
-Block* createBlock(Vector3 position);
-Cube* createCube();
+Block* createBlock(Vector3 position, int side);
+Cube* createCube(int side);
 void destroyCube(Cube* cube);
 
 typedef enum {
