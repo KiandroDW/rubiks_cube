@@ -2,6 +2,7 @@
 #define RUBIKSCUBE
 
 #include "raylib.h"
+
 #define ELEMENTAT(cube, i, j, k) cube->blocks[i * cube->side * cube->side + j * cube->side + k]
 
 typedef struct {
@@ -28,13 +29,24 @@ typedef struct {
 } Block;
 
 typedef struct {
+	int row;
+	int column;
+	bool enabled;
+	float scale;
+	int direction;
+} Selection;
+
+typedef struct {
 	int side;
 	Block** blocks;
+	Selection* selection;
 } Cube;
 
 Block* createBlock(Vector3 position, int side);
 Cube* createCube(int side);
 void destroyCube(Cube* cube);
+
+void UpdateSelection(Cube* cube);
 
 typedef enum {
 	FRONT,
@@ -60,7 +72,7 @@ typedef enum {
 	UPWARDS
 } Rotation;
 
-void executeMove(Cube* cube, Move move);
+void executeMove(Cube* cube, Move move, int layer);
 
 void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* rotationAnimation);
 

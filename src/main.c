@@ -46,57 +46,85 @@ int main(int argc, char* argv[]) {
 	// Main game loop
 	while (!WindowShouldClose()) {
 		UpdateRotation(rotationAnimation);
+		UpdateSelection(cube);
+		if(IsKeyPressed(KEY_RIGHT)) {
+			cube->selection->column--;
+			if (cube->selection->column < 0){
+				cube->selection->column = cube->side - 1;
+			}
+		}
+		if(IsKeyPressed(KEY_LEFT)) {
+			cube->selection->column++;
+			if (cube->selection->column >= cube->side){
+				cube->selection->column = 0;
+			}
+		}
+		if(IsKeyPressed(KEY_DOWN)) {
+			cube->selection->row--;
+			if (cube->selection->row < 0){
+				cube->selection->row = cube->side - 1;
+			}
+		}
+		if(IsKeyPressed(KEY_UP)) {
+			cube->selection->row++;
+			if (cube->selection->row >= cube->side){
+				cube->selection->row = 0;
+			}
+		}
+		if(IsKeyPressed(KEY_S)) {
+			cube->selection->enabled = !cube->selection->enabled;
+		}
 		if(IsKeyPressed(KEY_R)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, RIGHT_P, cube->side);
+					StartRotation(rotationAnimation, cube, RIGHT_P);
 				} else {
-					StartRotation(rotationAnimation, RIGHT, cube->side);
+					StartRotation(rotationAnimation, cube, RIGHT);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_L)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, LEFT_P, cube->side);
+					StartRotation(rotationAnimation, cube, LEFT_P);
 				} else {
-					StartRotation(rotationAnimation, LEFT, cube->side);
+					StartRotation(rotationAnimation, cube, LEFT);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_U)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, UP_P, cube->side);
+					StartRotation(rotationAnimation, cube, UP_P);
 				} else {
-					StartRotation(rotationAnimation, UP, cube->side);
+					StartRotation(rotationAnimation, cube, UP);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_D)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, DOWN_P, cube->side);
+					StartRotation(rotationAnimation, cube, DOWN_P);
 				} else {
-					StartRotation(rotationAnimation, DOWN, cube->side);
+					StartRotation(rotationAnimation, cube, DOWN);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_F)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, FRONT_P, cube->side);
+					StartRotation(rotationAnimation, cube, FRONT_P);
 				} else {
-					StartRotation(rotationAnimation, FRONT, cube->side);
+					StartRotation(rotationAnimation, cube, FRONT);
 				}
 			}
 		}
 		if(IsKeyPressed(KEY_B)) {
 			if (rotationAnimation->rotating == false) {
 				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, BACK_P, cube->side);
+					StartRotation(rotationAnimation, cube, BACK_P);
 				} else {
-					StartRotation(rotationAnimation, BACK, cube->side);
+					StartRotation(rotationAnimation, cube, BACK);
 				}
 			}
 		}

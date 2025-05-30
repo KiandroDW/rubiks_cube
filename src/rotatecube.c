@@ -1,9 +1,22 @@
 #include "rotatecube.h"
 #include "rubikscube.h"
 #include <stdbool.h>
+#include <stdio.h>
 
-void StartRotation(RotationAnimation* rotationAnimation, Move move, int side) {
+void StartRotation(RotationAnimation* rotationAnimation, Cube* cube, Move move) {
 	if (rotationAnimation->rotating == false && rotationAnimation->finished == false) {
+		int left = cube->side - 1;
+		int right = 0;
+		int up = cube->side - 1;
+		int down = 0;
+		int front = cube->side - 1;
+		int back = 0;
+		if (cube->selection->enabled) {
+			left = cube->selection->column;
+			right = cube->selection->column;
+			up = cube->selection->row;
+			down = cube->selection->row;
+		}
 		rotationAnimation->rotating = true;
 		rotationAnimation->angle = 0.0f;
 		if (move % 2 == 0) {
@@ -14,27 +27,30 @@ void StartRotation(RotationAnimation* rotationAnimation, Move move, int side) {
 		switch (move / 2) {
 			case 0: // F
 				rotationAnimation->axis = (Vector3) {1, 0, 0};
-				rotationAnimation->layer = side - 1;
+				rotationAnimation->layer = front;
 				break;
 			case 1: // U
 				rotationAnimation->axis = (Vector3) {0, 1, 0};
-				rotationAnimation->layer = side - 1;
+				rotationAnimation->layer = up;
 				break;
 			case 2: // L
 				rotationAnimation->axis = (Vector3) {0, 0, 1};
-				rotationAnimation->layer = side - 1;
+				rotationAnimation->layer = left;
 				break;
 			case 3: // B
 				rotationAnimation->axis = (Vector3) {1, 0, 0};
-				rotationAnimation->layer = 0;
+				rotationAnimation->layer = back;
+				rotationAnimation->direction = rotationAnimation->direction * -1;
 				break;
 			case 4: // D
 				rotationAnimation->axis = (Vector3) {0, 1, 0};
-				rotationAnimation->layer = 0;
+				rotationAnimation->layer = down;
+				rotationAnimation->direction = rotationAnimation->direction * -1;
 				break;
 			case 5: // R
 				rotationAnimation->axis = (Vector3) {0, 0, 1};
-				rotationAnimation->layer = 0;
+				rotationAnimation->layer = right;
+				rotationAnimation->direction = rotationAnimation->direction * -1;
 				break;
 		}
 		UpdateRotation(rotationAnimation);
@@ -76,5 +92,5 @@ void DecodeMove(Cube *cube, RotationAnimation *rotationAnimation) {
 			move = LEFT;
 		}
 	}
-	executeMove(cube, move + prime);
+	executeMove(cube, move + prime, rotationAnimation->layer);
 }

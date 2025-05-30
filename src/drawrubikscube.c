@@ -11,6 +11,8 @@
 void DrawRubiksCube(Cube* cube,  RotationAnimation* anim) {
 	const float planeHeight = 0.1f;
 	const float planeLength = 0.9f;
+	int selected_row = cube->selection->row;
+	int selected_column = cube->selection->column;
 
 	for (int i = 0; i < cube->side; i++) {
 		for (int j = 0; j < cube->side; j++) {
@@ -45,7 +47,12 @@ void DrawRubiksCube(Cube* cube,  RotationAnimation* anim) {
 				planeCenter.x += 1;
 				if (!COLISNULL(colors.front)) {
 					// Front
-					DrawCube(planeCenter, planeHeight, planeLength, planeLength, colors.front);
+					if (cube->selection->enabled && i == cube->side - 1 && j == selected_row && k == selected_column) {
+						float scale = cube->selection->scale;
+						DrawCube(planeCenter, planeHeight, planeLength * scale, planeLength * scale, colors.front);
+					} else {
+						DrawCube(planeCenter, planeHeight, planeLength, planeLength, colors.front);
+					}
 				}
 				planeCenter = center; // Back to center
 				planeCenter.y -= 0.5;

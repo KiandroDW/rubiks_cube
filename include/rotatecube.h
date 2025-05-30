@@ -2,7 +2,7 @@
 #define ROTATECUBE
 #include "rubikscube.h"
 
-void StartRotation(RotationAnimation* rotationAnimation, Move move, int side);
+void StartRotation(RotationAnimation* rotationAnimation, Cube* cube, Move move);
 
 void UpdateRotation(RotationAnimation* rotationAnimation);
 

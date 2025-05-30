@@ -42,6 +42,12 @@ Cube* createCube(int side) {
 			}
 		}
 	}
+	cube->selection = malloc(sizeof(Selection));
+	cube->selection->row = side - 1;
+	cube->selection->column = side - 1;
+	cube->selection->enabled = false;
+	cube->selection->scale = 0.9f;
+	cube->selection->direction = -1;
 	return cube;
 }
 
@@ -54,6 +60,7 @@ void destroyCube(Cube *cube) {
 		}
 	}
 	free(cube->blocks);
+	free(cube->selection);
 	free(cube);
 }
 
@@ -213,34 +220,34 @@ void rotateYZplaneCounterClockwise(Cube* cube, int plane) {
 	}
 }
 
-void executeMove(Cube* cube, Move move) {
+void executeMove(Cube* cube, Move move, int layer) {
 	Move moves[12] = {FRONT, FRONT_P, UP, UP_P, LEFT, LEFT_P, BACK, BACK_P, DOWN, DOWN_P, RIGHT, RIGHT_P};
 
 	int status = 0;
 	if (move == moves[0]) {
-		rotateYZplaneClockwise(cube, cube->side-1);
+		rotateYZplaneClockwise(cube, layer);
 	} else if (move == moves[1]) {
-		rotateYZplaneCounterClockwise(cube, cube->side-1);
+		rotateYZplaneCounterClockwise(cube, layer);
 	} else if (move == moves[2]) {
-		rotateXZplaneLeft(cube, cube->side-1);
+		rotateXZplaneLeft(cube, layer);
 	} else if (move == moves[3]) {
-		rotateXZplaneRight(cube, cube->side-1);
+		rotateXZplaneRight(cube, layer);
 	} else if (move == moves[4]) {
-		rotateXYplaneDown(cube, cube->side-1);
+		rotateXYplaneDown(cube, layer);
 	} else if (move == moves[5]) {
-		rotateXYplaneUp(cube, cube->side-1);
+		rotateXYplaneUp(cube, layer);
 	} else if (move == moves[6]) {
-		rotateYZplaneCounterClockwise(cube, 0);
+		rotateYZplaneClockwise(cube, layer);
 	} else if (move == moves[7]) {
-		rotateYZplaneClockwise(cube, 0);
+		rotateYZplaneCounterClockwise(cube, layer);
 	} else if (move == moves[8]) {
-		rotateXZplaneRight(cube, 0);
+		rotateXZplaneLeft(cube, layer);
 	} else if (move == moves[9]) {
-		rotateXZplaneLeft(cube, 0);
+		rotateXZplaneRight(cube, layer);
 	} else if (move == moves[10]) {
-		rotateXYplaneUp(cube, 0);
+		rotateXYplaneDown(cube, layer);
 	} else if (move == moves[11]) {
-		rotateXYplaneDown(cube, 0);
+		rotateXYplaneUp(cube, layer);
 	} else {
 		printf("You managed to break it");
 		status = 2;
@@ -260,10 +267,10 @@ void shuffle(Cube* cube) {
 		}
 		chosen_form = rand() % 3;
 		if (chosen_form == 2) {
-			executeMove(cube, chosen_set * 2); // double move
-			executeMove(cube, chosen_set * 2);
+			executeMove(cube, chosen_set * 2, 0); // double move
+			executeMove(cube, chosen_set * 2, 0);
 		} else {
-			executeMove(cube, chosen_set * 2 + chosen_form);
+			executeMove(cube, chosen_set * 2 + chosen_form, 0);
 		}
 
 		previous_previous = previous_set;
@@ -275,8 +282,9 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 	switch (rotation) {
 		case CLOCKWISE:
 			if (anim->axis.y == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.x, anim->axis.z, anim->axis.y};
 			for (int i = 0; i < cube->side; i++){
@@ -285,8 +293,9 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 			break;
 		case COUNTERCLOCKWISE:
 			if (anim->axis.z == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.x, anim->axis.z, anim->axis.y};
 			for (int i = 0; i < cube->side; i++){
@@ -295,8 +304,9 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 			break;
 		case DOWNWARDS:
 			if (anim->axis.x == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.y, anim->axis.x, anim->axis.z};
 			for (int i = 0; i < cube->side; i++){
@@ -305,8 +315,9 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 			break;
 		case UPWARDS:
 			if (anim->axis.y == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.y, anim->axis.x, anim->axis.z};
 			for (int i = 0; i < cube->side; i++){
@@ -315,8 +326,9 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 			break;
 		case LEFTWARDS:
 			if (anim->axis.z == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.z, anim->axis.y, anim->axis.x};
 			for (int i = 0; i < cube->side; i++){
@@ -325,8 +337,9 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 			break;
 		case RIGHTWARDS:
 			if (anim->axis.x == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.z, anim->axis.y, anim->axis.x};
 			for (int i = 0; i < cube->side; i++){
@@ -339,3 +352,11 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 
 	}
 };
+
+void UpdateSelection(Cube* cube) {
+	Selection* selection = cube->selection;
+	selection->scale += selection->direction * 0.01f;
+	if (selection->scale <= 0.7f || selection->scale >= 0.9f) {
+		selection->direction *= -1;
+	}
+}
