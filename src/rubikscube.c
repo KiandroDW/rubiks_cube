@@ -1,26 +1,29 @@
 #include "rubikscube.h"
-#include "rotatecube.h"
+#include "raylib.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-Block* createBlock(Vector3 position) {
+Block* createBlock(Vector3 position, int side) {
 	/*
 	 *	Righthanded system: x = forwards, y = upwards, z = leftwards
 	 */
 	Colors colors = {0};
-	if (position.x == 1) {
+	if (position.x == side - 1) {
 		colors.front = GREEN;
-	} else if (position.x == -1) {
+	}
+	if (position.x == 0) {
 		colors.back = BLUE;
 	}
-	if (position.y == 1) {
+	if (position.y == side - 1) {
 		colors.up = WHITE;
-	} else if (position.y == -1) {
+	}
+	if (position.y == 0) {
 		colors.down = YELLOW;
 	}
-	if (position.z == 1) {
+	if (position.z == side - 1) {
 		colors.left = ORANGE;
-	} else if (position.z == -1) {
+	}
+	if (position.z == 0) {
 		colors.right = RED;
 	}
 	Block* block = malloc(sizeof(Block));
@@ -28,27 +31,37 @@ Block* createBlock(Vector3 position) {
 	return block;
 }
 
-Cube* createCube() {
+Cube* createCube(int side) {
 	Cube* cube = malloc(sizeof(Cube));
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			for (int k = -1; k <= 1; k ++) {
+	cube->side = side;
+	cube->blocks = malloc(side * side * side * sizeof(Block*));
+	for (int i = 0; i < side; i++) {
+		for (int j = 0; j < side; j++) {
+			for (int k = 0; k < side; k ++) {
 				Vector3 pos = {i, j, k};
-				cube->blocks[i+1][j+1][k+1] = createBlock(pos);
+				ELEMENTAT(cube, i, j, k) = createBlock(pos, side);
 			}
 		}
 	}
+	cube->selection = malloc(sizeof(Selection));
+	cube->selection->row = side - 1;
+	cube->selection->column = side - 1;
+	cube->selection->enabled = false;
+	cube->selection->scale = 0.9f;
+	cube->selection->direction = -1;
 	return cube;
 }
 
 void destroyCube(Cube *cube) {
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			for (int k = -1; k <= 1; k ++) {
-				free(cube->blocks[i+1][j+1][k+1]);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			for (int k = 0; k < cube->side; k ++) {
+				free(ELEMENTAT(cube, i, j, k));
 			}
 		}
 	}
+	free(cube->blocks);
+	free(cube->selection);
 	free(cube);
 }
 
@@ -99,7 +112,7 @@ int rotateBlock(Block* block,  Rotation rotation) {
 			block->colors.back = temp;
 			break;
 		default:
-			printf("Somehow you had a not valid case");
+			printf("Somehow you had a not valid case\n");
 			status = 1;
 			break;
 	}
@@ -107,226 +120,228 @@ int rotateBlock(Block* block,  Rotation rotation) {
 }
 
 void rotateXYplaneDown(Cube* cube, int plane) {
-	Block* temp[3][3];
+	Block* temp[cube->side][cube->side];
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			temp[j][2-i] = cube->blocks[i][j][plane];
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			temp[j][cube->side-i-1] = ELEMENTAT(cube, i, j, plane);
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			cube->blocks[i][j][plane] = temp[i][j];
-			rotateBlock(cube->blocks[i][j][plane], DOWNWARDS);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			ELEMENTAT(cube, i, j, plane) = temp[i][j];
+			rotateBlock(ELEMENTAT(cube, i, j, plane), DOWNWARDS);
 		}
 	}
 }
 
 void rotateXYplaneUp(Cube* cube, int plane) {
-	Block* temp[3][3];
+	Block* temp[cube->side][cube->side];
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			temp[2-j][i] = cube->blocks[i][j][plane];
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			temp[cube->side-j-1][i] = ELEMENTAT(cube, i, j, plane);
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			cube->blocks[i][j][plane] = temp[i][j];
-			rotateBlock(cube->blocks[i][j][plane], UPWARDS);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			ELEMENTAT(cube, i, j, plane) = temp[i][j];
+			rotateBlock(ELEMENTAT(cube, i, j, plane), UPWARDS);
 		}
 	}
 }
 
 void rotateXZplaneRight(Cube* cube, int plane) {
-	Block* temp[3][3];
+	Block* temp[cube->side][cube->side];
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			temp[j][2-i] = cube->blocks[i][plane][j];
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			temp[j][cube->side-i-1] = ELEMENTAT(cube, i, plane, j);
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			cube->blocks[i][plane][j] = temp[i][j];
-			rotateBlock(cube->blocks[i][plane][j], RIGHTWARDS);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			ELEMENTAT(cube, i, plane, j) = temp[i][j];
+			rotateBlock(ELEMENTAT(cube, i, plane, j), RIGHTWARDS);
 		}
 	}
 }
 
 void rotateXZplaneLeft(Cube* cube, int plane) {
-	Block* temp[3][3];
+	Block* temp[cube->side][cube->side];
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			temp[2-j][i] = cube->blocks[i][plane][j];
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			temp[cube->side-j-1][i] = ELEMENTAT(cube, i, plane, j);
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			cube->blocks[i][plane][j] = temp[i][j];
-			rotateBlock(cube->blocks[i][plane][j], LEFTWARDS);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			ELEMENTAT(cube, i, plane, j) = temp[i][j];
+			rotateBlock(ELEMENTAT(cube, i, plane, j), LEFTWARDS);
 		}
 	}
 }
 
 void rotateYZplaneClockwise(Cube* cube, int plane) {
-	Block* temp[3][3];
+	Block* temp[cube->side][cube->side];
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			temp[j][2-i] = cube->blocks[plane][i][j];
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			temp[j][cube->side-i-1] = ELEMENTAT(cube, plane, i, j);
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			cube->blocks[plane][i][j] = temp[i][j];
-			rotateBlock(cube->blocks[plane][i][j], CLOCKWISE);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			ELEMENTAT(cube, plane, i, j) = temp[i][j];
+			rotateBlock(ELEMENTAT(cube, plane, i, j), CLOCKWISE);
 		}
 	}
 }
 
 void rotateYZplaneCounterClockwise(Cube* cube, int plane) {
-	Block* temp[3][3];
+	Block* temp[cube->side][cube->side];
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			temp[2-j][i] = cube->blocks[plane][i][j];
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			temp[cube->side-j-1][i] = ELEMENTAT(cube, plane, i, j);
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			cube->blocks[plane][i][j] = temp[i][j];
-			rotateBlock(cube->blocks[plane][i][j], COUNTERCLOCKWISE);
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			ELEMENTAT(cube, plane, i, j) = temp[i][j];
+			rotateBlock(ELEMENTAT(cube, plane, i, j), COUNTERCLOCKWISE);
 		}
 	}
 }
 
 void executeMove(Cube* cube, Move move) {
-	Move moves[12] = {FRONT, FRONT_P, UP, UP_P, LEFT, LEFT_P, BACK, BACK_P, DOWN, DOWN_P, RIGHT, RIGHT_P};
-
-	int status = 0;
-	if (move == moves[0]) {
-		rotateYZplaneClockwise(cube, 2);
-	} else if (move == moves[1]) {
-		rotateYZplaneCounterClockwise(cube, 2);
-	} else if (move == moves[2]) {
-		rotateXZplaneLeft(cube, 2);
-	} else if (move == moves[3]) {
-		rotateXZplaneRight(cube, 2);
-	} else if (move == moves[4]) {
-		rotateXYplaneDown(cube, 2);
-	} else if (move == moves[5]) {
-		rotateXYplaneUp(cube, 2);
-	} else if (move == moves[6]) {
-		rotateYZplaneCounterClockwise(cube, 0);
-	} else if (move == moves[7]) {
-		rotateYZplaneClockwise(cube, 0);
-	} else if (move == moves[8]) {
-		rotateXZplaneRight(cube, 0);
-	} else if (move == moves[9]) {
-		rotateXZplaneLeft(cube, 0);
-	} else if (move == moves[10]) {
-		rotateXYplaneUp(cube, 0);
-	} else if (move == moves[11]) {
-		rotateXYplaneDown(cube, 0);
+	if (move.axis.x == 1) {
+		if (move.direction == 1) {
+			rotateYZplaneClockwise(cube, move.layer);
+		} else {
+			rotateYZplaneCounterClockwise(cube, move.layer);
+		}
+	} else if (move.axis.y == 1) {
+		if (move.direction == 1) {
+			rotateXZplaneLeft(cube, move.layer);
+		} else {
+			rotateXZplaneRight(cube, move.layer);
+		}
 	} else {
-		printf("You managed to break it");
-		status = 2;
+		if (move.direction == 1) {
+			rotateXYplaneDown(cube, move.layer);
+		} else {
+			rotateXYplaneUp(cube, move.layer);
+		}
 	}
 }
 
-void shuffle(Cube* cube) {
-	int previous_previous = -1;
-	int previous_set = -1; // 0 = F, 1 = U, 2 = L, 3 = B, 4 = D, 5 = R
-	int chosen_set;
-	int chosen_form;
+void shuffle(Cube* cube, MoveQueue* queue) {
+	int previous_axis = -1;
+	int previous_layer = -1;
+	int chosen_axis;
+	int chosen_layer;
+	int chosen_direction;
+	Vector3 chosen_vector;
 
-	for (int i = 0; i < 25; i++) {
-		chosen_set = rand() % 6;
-		while (chosen_set == previous_set || chosen_set % 3 ==  previous_previous) {
-			chosen_set = rand() % 6;
+	for (int i = 0; i < cube->side * 10; i++) {
+		chosen_axis = rand() % 3;
+		chosen_layer = rand() % cube->side;
+		while ((chosen_axis == previous_axis && chosen_layer == previous_layer) || (cube->side % 2 == 1 && chosen_layer == (cube->side-1) / 2)) {
+			chosen_axis = rand() % 3;
+			chosen_layer = rand() % cube->side;
 		}
-		chosen_form = rand() % 3;
-		if (chosen_form == 2) {
-			executeMove(cube, chosen_set * 2); // double move
-			executeMove(cube, chosen_set * 2);
-		} else {
-			executeMove(cube, chosen_set * 2 + chosen_form);
+		if (chosen_axis == 0)
+			chosen_vector = (Vector3) {1, 0, 0};
+		if (chosen_axis == 1)
+			chosen_vector = (Vector3) {0, 1, 0};
+		if (chosen_axis == 2)
+			chosen_vector = (Vector3) {0, 0, 1};
+
+		chosen_direction = rand() % 2;
+		if (chosen_direction == 0) {
+			chosen_direction = 1;
 		}
 
-		previous_previous = previous_set;
+		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
+		addElement(selected_move, queue);
 	}
-	printf("\n");
 }
 
 void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 	switch (rotation) {
 		case CLOCKWISE:
 			if (anim->axis.y == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.x, anim->axis.z, anim->axis.y};
-			rotateYZplaneClockwise(cube, 0);
-			rotateYZplaneClockwise(cube, 1);
-			rotateYZplaneClockwise(cube, 2);
+			for (int i = 0; i < cube->side; i++){
+				rotateYZplaneClockwise(cube, i);
+			}
 			break;
 		case COUNTERCLOCKWISE:
 			if (anim->axis.z == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.x, anim->axis.z, anim->axis.y};
-			rotateYZplaneCounterClockwise(cube, 0);
-			rotateYZplaneCounterClockwise(cube, 1);
-			rotateYZplaneCounterClockwise(cube, 2);
+			for (int i = 0; i < cube->side; i++){
+				rotateYZplaneCounterClockwise(cube, i);
+			}
 			break;
 		case DOWNWARDS:
 			if (anim->axis.x == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.y, anim->axis.x, anim->axis.z};
-			rotateXYplaneDown(cube, 0);
-			rotateXYplaneDown(cube, 1);
-			rotateXYplaneDown(cube, 2);
+			for (int i = 0; i < cube->side; i++){
+				rotateXYplaneDown(cube, i);
+			}
 			break;
 		case UPWARDS:
 			if (anim->axis.y == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.y, anim->axis.x, anim->axis.z};
-			rotateXYplaneUp(cube, 0);
-			rotateXYplaneUp(cube, 1);
-			rotateXYplaneUp(cube, 2);
+			for (int i = 0; i < cube->side; i++){
+				rotateXYplaneUp(cube, i);
+			}
 			break;
 		case LEFTWARDS:
 			if (anim->axis.z == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.z, anim->axis.y, anim->axis.x};
-			rotateXZplaneLeft(cube, 0);
-			rotateXZplaneLeft(cube, 1);
-			rotateXZplaneLeft(cube, 2);
+			for (int i = 0; i < cube->side; i++){
+				rotateXZplaneLeft(cube, i);
+			}
 			break;
 		case RIGHTWARDS:
 			if (anim->axis.x == 1) {
-				anim->layer = - anim->layer;
+				anim->layer = cube->side - anim->layer - 1;
 				anim->angle = - anim->angle;
+				anim->direction = - anim->direction;
 			}
 			anim->axis = (Vector3) {anim->axis.z, anim->axis.y, anim->axis.x};
-			rotateXZplaneRight(cube, 0);
-			rotateXZplaneRight(cube, 1);
-			rotateXZplaneRight(cube, 2);
+			for (int i = 0; i < cube->side; i++){
+				rotateXZplaneRight(cube, i);
+			}
 			break;
 		default:
 			printf("You broke it :(\n");
@@ -334,3 +349,11 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 
 	}
 };
+
+void UpdateSelection(Cube* cube) {
+	Selection* selection = cube->selection;
+	selection->scale += selection->direction * 0.01f;
+	if (selection->scale <= 0.7f || selection->scale >= 0.9f) {
+		selection->direction *= -1;
+	}
+}

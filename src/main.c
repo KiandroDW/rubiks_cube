@@ -1,12 +1,14 @@
 #include "drawrubikscube.h"
+#include "queue.h"
 #include "raylib.h"
 #include "rotatecube.h"
 #include "rubikscube.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-int main(void) {
+int main(int argc, char* argv[]) {
+	srand(time(NULL));
 	// Initialization
 	const int screenWidth = 800;
 	const int screenHeight = 450;
@@ -33,66 +35,135 @@ int main(void) {
 	SetTargetFPS(60);
 
 	// Rubiks cube:
-	Cube* cube = createCube();
+	Cube* cube;
+	if (argc > 1) {
+		cube = createCube(atoi(argv[1]));
+	} else {
+		cube = createCube(3);
+	}
 	RotationAnimation* rotationAnimation = malloc(sizeof(RotationAnimation));
 	rotationAnimation->rotating = false;
 	rotationAnimation->side = 0;
 
+	MoveQueue* queue = initQueue();
+
 	// Main game loop
 	while (!WindowShouldClose()) {
 		UpdateRotation(rotationAnimation);
+		UpdateSelection(cube);
+		if(IsKeyPressed(KEY_RIGHT)) {
+			cube->selection->column--;
+			if (cube->selection->column < 0){
+				cube->selection->column = cube->side - 1;
+			}
+		}
+		if(IsKeyPressed(KEY_LEFT)) {
+			cube->selection->column++;
+			if (cube->selection->column >= cube->side){
+				cube->selection->column = 0;
+			}
+		}
+		if(IsKeyPressed(KEY_DOWN)) {
+			cube->selection->row--;
+			if (cube->selection->row < 0){
+				cube->selection->row = cube->side - 1;
+			}
+		}
+		if(IsKeyPressed(KEY_UP)) {
+			cube->selection->row++;
+			if (cube->selection->row >= cube->side){
+				cube->selection->row = 0;
+			}
+		}
+		if(IsKeyPressed(KEY_S)) {
+			cube->selection->enabled = !cube->selection->enabled;
+		}
 		if(IsKeyPressed(KEY_R)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, RIGHT_P);
-				} else {
-					StartRotation(rotationAnimation, RIGHT);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 0, 1};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->column;
+			} else {
+				move.layer = 0;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_L)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, LEFT_P);
-				} else {
-					StartRotation(rotationAnimation, LEFT);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 0, 1};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->column;
+			} else {
+				move.layer = cube->side - 1;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_U)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, UP_P);
-				} else {
-					StartRotation(rotationAnimation, UP);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 1, 0};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->row;
+			} else {
+				move.layer = cube->side - 1;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_D)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, DOWN_P);
-				} else {
-					StartRotation(rotationAnimation, DOWN);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 1, 0};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->row;
+			} else {
+				move.layer = 0;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_F)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, FRONT_P);
-				} else {
-					StartRotation(rotationAnimation, FRONT);
-				}
+			Move move;
+			move.axis = (Vector3) {1, 0, 0};
+			move.layer = cube->side - 1;
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_B)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, BACK_P);
-				} else {
-					StartRotation(rotationAnimation, BACK);
-				}
+			Move move;
+			move.axis = (Vector3) {1, 0, 0};
+			move.layer = 0;
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_X)) {
@@ -117,7 +188,11 @@ int main(void) {
 			}
 		}
 		if(IsKeyPressed(KEY_SPACE)) {
-			shuffle(cube);
+			shuffle(cube, queue);
+		}
+
+		if (rotationAnimation->finished == false && rotationAnimation->rotating == false && queue->start != NULL) {
+			StartRotation(rotationAnimation, popElement(queue));
 		}
 
 		if (rotationAnimation->finished) {
@@ -153,11 +228,11 @@ int main(void) {
 		}
 
 		float scroll = GetMouseWheelMove();
-		distance -= scroll;
-		if (distance <  2.0f)
-			distance = 2.0f;
-		if (distance > 20.0f)
-			distance = 20.0f;
+		distance -= scroll * cube->side;
+		if (distance <  cube->side * 1.2f)
+			distance = cube->side * 1.2f;
+		if (distance > cube->side * 6.0f)
+			distance = cube->side * 6.0f;
 
 
 		float yawRad = yaw * DEG2RAD;
@@ -176,9 +251,11 @@ int main(void) {
 
 			BeginMode3D(camera);
 
-			DrawRubiksCube(cube, rotationAnimation);
+			DrawRubiksCube(cube, rotationAnimation, yaw, pitch);
 
 			EndMode3D();
+
+			DrawFPS(20, 20);
 		}
 		EndDrawing();
 	}

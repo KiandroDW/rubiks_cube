@@ -2,8 +2,8 @@
 #define DRAWRUBIKSCUBE
 
 #include "rotatecube.h"
-#include "rubikscube.h"
+#include "rubikscubeparts.h"
 
-void DrawRubiksCube(Cube* cube, RotationAnimation* rotationAnimation);
+void DrawRubiksCube(Cube* cube, RotationAnimation* rotationAnimation, int yaw, int pitch);
 
 #endif
