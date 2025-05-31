@@ -8,15 +8,16 @@
 #define COLISNULL(color) \
 	(color.r == 0 && color.g == 0 && color.b == 0 && color.a == 0)
 
-void DrawRubiksCube(Cube* cube,  RotationAnimation* anim) {
+void DrawLayer(Cube* cube, RotationAnimation* anim, int x_0, int dx, int y_0, int dy, int z_0, int dz) {
 	const float planeHeight = 0.1f;
 	const float planeLength = 0.9f;
 	int selected_row = cube->selection->row;
 	int selected_column = cube->selection->column;
 
-	for (int i = 0; i < cube->side; i++) {
-		for (int j = 0; j < cube->side; j++) {
-			for (int k = 0; k < cube->side; k++) {
+	for (int i = x_0; i < x_0 + dx; i++) {
+		for (int j = y_0; j < y_0 + dy; j++) {
+			for (int k = z_0; k < z_0 + dz; k++) {
+
 				rlPushMatrix();
 				if (anim->rotating == true) {
 					int layer = anim->layer;
@@ -78,6 +79,39 @@ void DrawRubiksCube(Cube* cube,  RotationAnimation* anim) {
 				}
 				rlPopMatrix();
 			}
+		}
+	}
+}
+
+void DrawRubiksCube(Cube* cube,  RotationAnimation* anim, int yaw, int pitch) {
+	DrawLayer(cube, anim, cube->side - 1, 1, 0, cube->side, 0, cube->side);
+	if (yaw > 90)
+		DrawLayer(cube, anim, 0, cube->side, 0, cube->side, 0, 1);
+	if (yaw < 90)
+		DrawLayer(cube, anim, 0, cube->side, 0, cube->side, cube->side - 1, 1);
+	if (pitch > 0)
+		DrawLayer(cube, anim, 0, cube->side, cube->side - 1, 1, 0, cube->side);
+	if (pitch < 0)
+		DrawLayer(cube, anim, 0, cube->side, 0, 1, 0, cube->side);
+
+	if (anim->rotating) {
+		if (anim->axis.x) {
+			DrawLayer(cube, anim, anim->layer, 1, 0, cube->side, 0, cube->side);
+			if (anim->layer > 0)
+				DrawLayer(cube, anim, anim->layer - 1, 1, 0, cube->side, 0, cube->side);
+			// You can never look from the back, so it doesnt render that layer
+		} else if (anim->axis.y) {
+			DrawLayer(cube, anim, 0, cube->side, anim->layer, 1, 0, cube->side);
+			if (anim->layer > 0)
+				DrawLayer(cube, anim, 0, cube->side, anim->layer - 1, 1, 0, cube->side);
+			if (anim->layer < cube->side - 1)
+				DrawLayer(cube, anim, 0, cube->side, anim->layer + 1, 1, 0, cube->side);
+		} else {
+			DrawLayer(cube, anim, 0, cube->side, 0, cube->side, anim->layer, 1);
+			if (anim->layer > 0)
+				DrawLayer(cube, anim, 0, cube->side, 0, cube->side, anim->layer - 1, 1);
+			if (anim->layer < cube->side - 1)
+				DrawLayer(cube, anim, 0, cube->side, 0, cube->side, anim->layer + 1, 1);
 		}
 	}
 }

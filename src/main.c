@@ -209,9 +209,11 @@ int main(int argc, char* argv[]) {
 
 			BeginMode3D(camera);
 
-			DrawRubiksCube(cube, rotationAnimation);
+			DrawRubiksCube(cube, rotationAnimation, yaw, pitch);
 
 			EndMode3D();
+
+			DrawFPS(20, 20);
 		}
 		EndDrawing();
 	}
