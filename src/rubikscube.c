@@ -254,7 +254,7 @@ void shuffle(Cube* cube, MoveQueue* queue) {
 	for (int i = 0; i < cube->side * 10; i++) {
 		chosen_axis = rand() % 3;
 		chosen_layer = rand() % cube->side;
-		while (chosen_axis == previous_axis && chosen_layer == previous_layer) {
+		while ((chosen_axis == previous_axis && chosen_layer == previous_layer) || (cube->side % 2 == 1 && chosen_layer == (cube->side-1) / 2)) {
 			chosen_axis = rand() % 3;
 			chosen_layer = rand() % cube->side;
 		}

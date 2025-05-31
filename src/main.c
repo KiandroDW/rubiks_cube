@@ -5,8 +5,10 @@
 #include "rubikscube.h"
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 
 int main(int argc, char* argv[]) {
+	srand(time(NULL));
 	// Initialization
 	const int screenWidth = 800;
 	const int screenHeight = 450;
@@ -189,14 +191,13 @@ int main(int argc, char* argv[]) {
 			shuffle(cube, queue);
 		}
 
+		if (rotationAnimation->finished == false && rotationAnimation->rotating == false && queue->start != NULL) {
+			StartRotation(rotationAnimation, popElement(queue));
+		}
 
 		if (rotationAnimation->finished) {
 			rotationAnimation->finished = false;
 			DecodeMove(cube, rotationAnimation);
-		}
-
-		if (rotationAnimation->finished == false && rotationAnimation->rotating == false && queue->start != NULL) {
-			StartRotation(rotationAnimation, popElement(queue));
 		}
 
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
