@@ -3,7 +3,6 @@
 #include "rlgl.h"
 #include "rubikscube.h"
 #include <stdbool.h>
-#include <stdio.h>
 
 #define COLISNULL(color) \
 	(color.r == 0 && color.g == 0 && color.b == 0 && color.a == 0)
@@ -30,7 +29,7 @@ void DrawLayer(Cube* cube, RotationAnimation* anim, int x_0, int dx, int y_0, in
 						if (anim->axis.z != 0) pivot = (Vector3){0, 0, anim->layer};
 
 						rlTranslatef(pivot.x, pivot.y, pivot.z);
-						rlRotatef(anim->angle, anim->axis.x, anim->axis.y, anim->axis.z);
+						rlRotatef(-anim->angle, anim->axis.x, anim->axis.y, anim->axis.z);
 						rlTranslatef(-pivot.x, -pivot.y, -pivot.z);
 					}
 				}

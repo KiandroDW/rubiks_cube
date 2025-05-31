@@ -1,9 +1,9 @@
 #include "drawrubikscube.h"
+#include "queue.h"
 #include "raylib.h"
 #include "rotatecube.h"
 #include "rubikscube.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char* argv[]) {
@@ -43,6 +43,8 @@ int main(int argc, char* argv[]) {
 	rotationAnimation->rotating = false;
 	rotationAnimation->side = 0;
 
+	MoveQueue* queue = initQueue();
+
 	// Main game loop
 	while (!WindowShouldClose()) {
 		UpdateRotation(rotationAnimation);
@@ -75,57 +77,91 @@ int main(int argc, char* argv[]) {
 			cube->selection->enabled = !cube->selection->enabled;
 		}
 		if(IsKeyPressed(KEY_R)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, cube, RIGHT_P);
-				} else {
-					StartRotation(rotationAnimation, cube, RIGHT);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 0, 1};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->column;
+			} else {
+				move.layer = 0;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_L)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, cube, LEFT_P);
-				} else {
-					StartRotation(rotationAnimation, cube, LEFT);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 0, 1};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->column;
+			} else {
+				move.layer = cube->side - 1;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_U)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, cube, UP_P);
-				} else {
-					StartRotation(rotationAnimation, cube, UP);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 1, 0};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->row;
+			} else {
+				move.layer = cube->side - 1;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_D)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, cube, DOWN_P);
-				} else {
-					StartRotation(rotationAnimation, cube, DOWN);
-				}
+			Move move;
+			move.axis = (Vector3) {0, 1, 0};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->row;
+			} else {
+				move.layer = 0;
+			}
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_F)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, cube, FRONT_P);
-				} else {
-					StartRotation(rotationAnimation, cube, FRONT);
-				}
+			Move move;
+			move.axis = (Vector3) {1, 0, 0};
+			move.layer = cube->side - 1;
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_B)) {
-			if (rotationAnimation->rotating == false) {
-				if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-					StartRotation(rotationAnimation, cube, BACK_P);
-				} else {
-					StartRotation(rotationAnimation, cube, BACK);
-				}
+			Move move;
+			move.axis = (Vector3) {1, 0, 0};
+			move.layer = 0;
+			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
 			}
 		}
 		if(IsKeyPressed(KEY_X)) {
@@ -150,12 +186,17 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		if(IsKeyPressed(KEY_SPACE)) {
-			shuffle(cube);
+			shuffle(cube, queue);
 		}
+
 
 		if (rotationAnimation->finished) {
 			rotationAnimation->finished = false;
 			DecodeMove(cube, rotationAnimation);
+		}
+
+		if (rotationAnimation->finished == false && rotationAnimation->rotating == false && queue->start != NULL) {
+			StartRotation(rotationAnimation, popElement(queue));
 		}
 
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {

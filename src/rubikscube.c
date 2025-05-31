@@ -1,4 +1,5 @@
 #include "rubikscube.h"
+#include "raylib.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -111,7 +112,7 @@ int rotateBlock(Block* block,  Rotation rotation) {
 			block->colors.back = temp;
 			break;
 		default:
-			printf("Somehow you had a not valid case");
+			printf("Somehow you had a not valid case\n");
 			status = 1;
 			break;
 	}
@@ -220,62 +221,58 @@ void rotateYZplaneCounterClockwise(Cube* cube, int plane) {
 	}
 }
 
-void executeMove(Cube* cube, Move move, int layer) {
-	Move moves[12] = {FRONT, FRONT_P, UP, UP_P, LEFT, LEFT_P, BACK, BACK_P, DOWN, DOWN_P, RIGHT, RIGHT_P};
-
-	int status = 0;
-	if (move == moves[0]) {
-		rotateYZplaneClockwise(cube, layer);
-	} else if (move == moves[1]) {
-		rotateYZplaneCounterClockwise(cube, layer);
-	} else if (move == moves[2]) {
-		rotateXZplaneLeft(cube, layer);
-	} else if (move == moves[3]) {
-		rotateXZplaneRight(cube, layer);
-	} else if (move == moves[4]) {
-		rotateXYplaneDown(cube, layer);
-	} else if (move == moves[5]) {
-		rotateXYplaneUp(cube, layer);
-	} else if (move == moves[6]) {
-		rotateYZplaneClockwise(cube, layer);
-	} else if (move == moves[7]) {
-		rotateYZplaneCounterClockwise(cube, layer);
-	} else if (move == moves[8]) {
-		rotateXZplaneLeft(cube, layer);
-	} else if (move == moves[9]) {
-		rotateXZplaneRight(cube, layer);
-	} else if (move == moves[10]) {
-		rotateXYplaneDown(cube, layer);
-	} else if (move == moves[11]) {
-		rotateXYplaneUp(cube, layer);
+void executeMove(Cube* cube, Move move) {
+	if (move.axis.x == 1) {
+		if (move.direction == 1) {
+			rotateYZplaneClockwise(cube, move.layer);
+		} else {
+			rotateYZplaneCounterClockwise(cube, move.layer);
+		}
+	} else if (move.axis.y == 1) {
+		if (move.direction == 1) {
+			rotateXZplaneLeft(cube, move.layer);
+		} else {
+			rotateXZplaneRight(cube, move.layer);
+		}
 	} else {
-		printf("You managed to break it");
-		status = 2;
+		if (move.direction == 1) {
+			rotateXYplaneDown(cube, move.layer);
+		} else {
+			rotateXYplaneUp(cube, move.layer);
+		}
 	}
 }
 
-void shuffle(Cube* cube) {
-	int previous_previous = -1;
-	int previous_set = -1; // 0 = F, 1 = U, 2 = L, 3 = B, 4 = D, 5 = R
-	int chosen_set;
-	int chosen_form;
+void shuffle(Cube* cube, MoveQueue* queue) {
+	int previous_axis = -1;
+	int previous_layer = -1;
+	int chosen_axis;
+	int chosen_layer;
+	int chosen_direction;
+	Vector3 chosen_vector;
 
-	for (int i = 0; i < 25; i++) {
-		chosen_set = rand() % 6;
-		while (chosen_set == previous_set || chosen_set % 3 ==  previous_previous) {
-			chosen_set = rand() % 6;
+	for (int i = 0; i < cube->side * 10; i++) {
+		chosen_axis = rand() % 3;
+		chosen_layer = rand() % cube->side;
+		while (chosen_axis == previous_axis && chosen_layer == previous_layer) {
+			chosen_axis = rand() % 3;
+			chosen_layer = rand() % cube->side;
 		}
-		chosen_form = rand() % 3;
-		if (chosen_form == 2) {
-			executeMove(cube, chosen_set * 2, 0); // double move
-			executeMove(cube, chosen_set * 2, 0);
-		} else {
-			executeMove(cube, chosen_set * 2 + chosen_form, 0);
+		if (chosen_axis == 0)
+			chosen_vector = (Vector3) {1, 0, 0};
+		if (chosen_axis == 1)
+			chosen_vector = (Vector3) {0, 1, 0};
+		if (chosen_axis == 2)
+			chosen_vector = (Vector3) {0, 0, 1};
+
+		chosen_direction = rand() % 2;
+		if (chosen_direction == 0) {
+			chosen_direction = 1;
 		}
 
-		previous_previous = previous_set;
+		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
+		addElement(selected_move, queue);
 	}
-	printf("\n");
 }
 
 void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
