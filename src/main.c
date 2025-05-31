@@ -44,6 +44,7 @@ int main(int argc, char* argv[]) {
 	RotationAnimation* rotationAnimation = malloc(sizeof(RotationAnimation));
 	rotationAnimation->rotating = false;
 	rotationAnimation->side = 0;
+	rotationAnimation->delay = 0;
 
 	MoveQueue* queue = initQueue();
 
@@ -191,7 +192,8 @@ int main(int argc, char* argv[]) {
 			shuffle(cube, queue);
 		}
 
-		if (rotationAnimation->finished == false && rotationAnimation->rotating == false && queue->start != NULL) {
+		if (rotationAnimation->delay == 0 && queue->start != NULL) {
+			rotationAnimation->delay = 7;
 			StartRotation(rotationAnimation, popElement(queue));
 		}
 

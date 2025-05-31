@@ -20,6 +20,11 @@ void UpdateRotation(RotationAnimation *rotationAnimation) {
 			rotationAnimation->rotating = false;
 			rotationAnimation->finished = true;
 		}
+	} else {
+		rotationAnimation->delay--;
+		if (rotationAnimation->delay < 0) {
+			rotationAnimation->delay = 0;
+		}
 	}
 }
 
