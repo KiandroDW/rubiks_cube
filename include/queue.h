@@ -1,7 +1,9 @@
 #ifndef MOVEQUEUE
 #define MOVEQUEUE
 
+#include "raylib.h"
 #include "rubikscubeparts.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef struct MoveQueueElement{
@@ -56,6 +58,40 @@ static void _freeElement(MoveQueueElement* element) {
 static void freeQueue(MoveQueue* queue) {
 	_freeElement(queue->start);
 	free(queue);
+}
+
+static void _translateMove(char* result, Move* move) {
+	if (move->axis.x) {
+		if (move->direction == 1) {
+			sprintf(result, "%d%s", move->layer, "F");
+		} else {
+			sprintf(result, "%d%s", move->layer, "B");
+		}
+	} else if (move->axis.y) {
+		if (move->direction == 1) {
+			sprintf(result, "%d%s", move->layer, "U");
+		} else {
+			sprintf(result, "%d%s", move->layer, "D");
+		}
+	} else {
+		if (move->direction == 1) {
+			sprintf(result, "%d%s", move->layer, "L");
+		} else {
+			sprintf(result, "%d%s", move->layer, "R");
+		}
+	}
+}
+
+static void DrawQueue(MoveQueue* queue) {
+	MoveQueueElement* current = queue->start;
+	int counter = 0;
+	char text[5];
+	while (current != NULL && counter < 20) {
+		_translateMove(text, &current->value);
+		DrawText(text, 900 + 75*counter, 30, 30, LIGHTGRAY);
+		current = current->next;
+		counter++;
+	}
 }
 
 #endif

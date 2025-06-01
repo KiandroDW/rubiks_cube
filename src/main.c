@@ -4,14 +4,57 @@
 #include "rotatecube.h"
 #include "rubikscube.h"
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+void DrawOverlay(int size) {
+	const char* labels[9] = {
+        "X", "Y", "Z",
+        "B", "U", "F",
+        "L", "D", "R"
+    };
+	const char* bigText = "Clockwise";
+	float spacing = 10;
+	float smallRectSize = 75;
+
+	float bigRectWidth = 3 * smallRectSize + 2 * spacing;
+	float bigRectHeight = 75;
+	float bigRectX = 1800 - bigRectWidth - spacing;
+	float bigRectY = 900 - bigRectHeight - spacing - 3 * (smallRectSize + spacing);
+	DrawRectangleRounded((Rectangle){ bigRectX, bigRectY, bigRectWidth, bigRectHeight }, 0.3f, 10, LIGHTGRAY);
+	int bigTextWidth = MeasureText(bigText, 25);
+	DrawText(bigText, bigRectX + bigRectWidth / 2 - bigTextWidth / 2, bigRectY + bigRectHeight / 2 - 10, 25, DARKGRAY);
+
+	float startX = 1800 - 3 * (smallRectSize + spacing);
+	float startY = 900 - 3 * (smallRectSize + spacing);
+
+	for (int row = 0; row < 3; row++) {
+		for (int col = 0; col < 3; col++) {
+			int index = row * 3 + col;
+			float x = startX + col * (smallRectSize + spacing);
+			float y = startY + row * (smallRectSize + spacing);
+			DrawRectangleRounded((Rectangle){ x, y, smallRectSize, smallRectSize }, 0.2f, 10, SKYBLUE);
+
+			int textWidth = MeasureText(labels[index], 25);
+			DrawText(labels[index], x + smallRectSize / 2 - textWidth / 2, y + smallRectSize / 2 - 10, 25, DARKBLUE);
+		}
+	}
+
+	char res[4];
+	sprintf(res, "%d", size);
+	DrawRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, LIGHTGRAY);
+	DrawText("-", 30, 835, 40, BLACK);
+	DrawText("+", 170, 835, 40, BLACK);
+	int textWidth = MeasureText(res, 40);
+	DrawText(res, 105 - textWidth / 2, 835, 40, BLACK);
+}
 
 int main(int argc, char* argv[]) {
 	srand(time(NULL));
 	// Initialization
-	const int screenWidth = 800;
-	const int screenHeight = 450;
+	const int screenWidth = 1800;
+	const int screenHeight = 900;
 
 	InitWindow(screenWidth, screenHeight, "Rubiks cube");
 
@@ -258,6 +301,11 @@ int main(int argc, char* argv[]) {
 			EndMode3D();
 
 			DrawFPS(20, 20);
+
+			DrawOverlay(cube->side);
+
+			DrawQueue(queue);
+
 		}
 		EndDrawing();
 	}
