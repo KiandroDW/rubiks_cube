@@ -41,13 +41,20 @@ void DrawOverlay(int size) {
 		}
 	}
 
+	// Cube size
 	char res[4];
 	sprintf(res, "%d", size);
-	DrawRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, LIGHTGRAY);
-	DrawText("-", 30, 835, 40, BLACK);
-	DrawText("+", 170, 835, 40, BLACK);
+	DrawRectangleRounded((Rectangle) {10, 730, 200, 75}, 0.3f, 10, LIGHTGRAY);
+	DrawText("-", 30, 750, 40, BLACK);
+	DrawText("+", 170, 750, 40, BLACK);
 	int textWidth = MeasureText(res, 40);
-	DrawText(res, 105 - textWidth / 2, 835, 40, BLACK);
+	DrawText(res, 105 - textWidth / 2, 750, 40, BLACK);
+
+	// Shuffle button
+	sprintf(res, "%d", size);
+	DrawRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, SKYBLUE);
+	textWidth = MeasureText("Shuffle", 40);
+	DrawText("Shuffle", 105 - textWidth / 2, 835, 40, DARKBLUE);
 }
 
 int main(int argc, char* argv[]) {
