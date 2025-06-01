@@ -8,13 +8,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-void DrawOverlay(int size) {
+void DrawOverlay(int size, bool clockWiseRotation) {
 	const char* labels[9] = {
         "X", "Y", "Z",
         "B", "U", "F",
         "L", "D", "R"
     };
-	const char* bigText = "Clockwise";
+	const char* bigText[2] = {"Counter-Clockwise", "Clockwise"};
 	float spacing = 10;
 	float smallRectSize = 75;
 
@@ -23,8 +23,8 @@ void DrawOverlay(int size) {
 	float bigRectX = 1800 - bigRectWidth - spacing;
 	float bigRectY = 900 - bigRectHeight - spacing - 3 * (smallRectSize + spacing);
 	DrawRectangleRounded((Rectangle){ bigRectX, bigRectY, bigRectWidth, bigRectHeight }, 0.3f, 10, LIGHTGRAY);
-	int bigTextWidth = MeasureText(bigText, 25);
-	DrawText(bigText, bigRectX + bigRectWidth / 2 - bigTextWidth / 2, bigRectY + bigRectHeight / 2 - 10, 25, DARKGRAY);
+	int bigTextWidth = MeasureText(bigText[clockWiseRotation], 25);
+	DrawText(bigText[clockWiseRotation], bigRectX + bigRectWidth / 2 - bigTextWidth / 2, bigRectY + bigRectHeight / 2 - 10, 25, DARKGRAY);
 
 	float startX = 1800 - 3 * (smallRectSize + spacing);
 	float startY = 900 - 3 * (smallRectSize + spacing);
@@ -55,6 +55,187 @@ void DrawOverlay(int size) {
 	DrawRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, SKYBLUE);
 	textWidth = MeasureText("Shuffle", 40);
 	DrawText("Shuffle", 105 - textWidth / 2, 835, 40, DARKBLUE);
+}
+
+void ControlButtons(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockWiseRotation) {
+	Vector2 mousePosition = GetMousePosition();
+	if (mousePosition.x <= 210 && mousePosition.x >= 10 && mousePosition.y <= 890 && mousePosition.y >= 815) {
+		// shuffle
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			shuffle(cube, queue);
+		}
+	} else if (mousePosition.x <= 50 && mousePosition.x >= 20 && mousePosition.y <= 785 && mousePosition.y >= 750) {
+		// size -
+		int size = cube->side;
+		if (size > 1) {
+			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+			if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+				resetCube(cube, size - 1);
+				while (queue->start != NULL) {
+					popElement(queue);
+				}
+				anim->rotating = false;
+				anim->finished = false;
+			}
+		}
+	} else if (mousePosition.x <= 190 && mousePosition.x >= 160 && mousePosition.y <= 785 && mousePosition.y >= 750) {
+		// size +
+		int size = cube->side;
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			resetCube(cube, size + 1);
+			while (queue->start != NULL) {
+				popElement(queue);
+			}
+			anim->rotating = false;
+			anim->finished = false;
+		}
+	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1545 && mousePosition.y <= 635 && mousePosition.y >= 560) {
+		// Switch rotation
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			*clockWiseRotation = (*clockWiseRotation + 1) % 2;
+		}
+	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 720 && mousePosition.y >= 645) {
+		// Z
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			if (*clockWiseRotation == false) {
+				rotateCube(cube, DOWNWARDS, anim);
+			} else {
+				rotateCube(cube, UPWARDS, anim);
+			}
+		}
+	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 720 && mousePosition.y >= 645) {
+		// Y
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			if (*clockWiseRotation == false) {
+				rotateCube(cube, RIGHTWARDS, anim);
+			} else {
+				rotateCube(cube, LEFTWARDS, anim);
+			}
+		}
+	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 720 && mousePosition.y >= 645) {
+		// X
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			if (*clockWiseRotation == false) {
+				rotateCube(cube, COUNTERCLOCKWISE, anim);
+			} else {
+				rotateCube(cube, CLOCKWISE, anim);
+			}
+		}
+	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 805 && mousePosition.y >= 730) {
+		// F
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			Move move;
+			move.axis = (Vector3) {1, 0, 0};
+			move.layer = cube->side - 1;
+			if (*clockWiseRotation == false) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
+			}
+		}
+	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 805 && mousePosition.y >= 730) {
+		// U
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			Move move;
+			move.axis = (Vector3) {0, 1, 0};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->row;
+			} else {
+				move.layer = cube->side - 1;
+			}
+			if (*clockWiseRotation == false) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
+			}
+		}
+	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 805 && mousePosition.y >= 730) {
+		// B
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			Move move;
+			move.axis = (Vector3) {1, 0, 0};
+			move.layer = 0;
+			if (*clockWiseRotation == false) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
+			}
+		}
+	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 890 && mousePosition.y >= 815) {
+		// R
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			Move move;
+			move.axis = (Vector3) {0, 0, 1};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->column;
+			} else {
+				move.layer = 0;
+			}
+			if (*clockWiseRotation == false) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
+			}
+		}
+	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 890 && mousePosition.y >= 815) {
+		// D
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			Move move;
+			move.axis = (Vector3) {0, 1, 0};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->row;
+			} else {
+				move.layer = 0;
+			}
+			if (*clockWiseRotation == false) {
+				move.direction = 1;
+				addElement(move, queue);
+			} else {
+				move.direction = -1;
+				addElement(move, queue);
+			}
+		}
+	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 890 && mousePosition.y >= 815) {
+		// L
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			Move move;
+			move.axis = (Vector3) {0, 0, 1};
+			if (cube->selection->enabled) {
+				move.layer = cube->selection->column;
+			} else {
+				move.layer = cube->side - 1;
+			}
+			if (*clockWiseRotation == false) {
+				move.direction = -1;
+				addElement(move, queue);
+			} else {
+				move.direction = 1;
+				addElement(move, queue);
+			}
+		}
+	} else {
+		SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -97,9 +278,11 @@ int main(int argc, char* argv[]) {
 	rotationAnimation->delay = 0;
 
 	MoveQueue* queue = initQueue();
+	bool clockWiseRotation = true;
 
 	// Main game loop
 	while (!WindowShouldClose()) {
+		ControlButtons(cube, queue, rotationAnimation, &clockWiseRotation);
 		UpdateRotation(rotationAnimation);
 		UpdateSelection(cube);
 		if(IsKeyPressed(KEY_RIGHT)) {
@@ -226,9 +409,9 @@ int main(int argc, char* argv[]) {
 		}
 		if(IsKeyPressed(KEY_Y)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				rotateCube(cube, LEFTWARDS, rotationAnimation);
-			} else {
 				rotateCube(cube, RIGHTWARDS, rotationAnimation);
+			} else {
+				rotateCube(cube, LEFTWARDS, rotationAnimation);
 			}
 		}
 		if(IsKeyPressed(KEY_W)) {
@@ -309,7 +492,7 @@ int main(int argc, char* argv[]) {
 
 			DrawFPS(20, 20);
 
-			DrawOverlay(cube->side);
+			DrawOverlay(cube->side, clockWiseRotation);
 
 			DrawQueue(queue);
 
