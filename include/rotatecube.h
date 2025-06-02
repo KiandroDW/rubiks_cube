@@ -10,6 +10,7 @@ typedef struct {
 	Vector3 axis;
 	bool finished;
 	int side; // -1 => from under, 0 => straight on, 1 => from above
+	int delay;
 } RotationAnimation;
 
 void StartRotation(RotationAnimation* rotationAnimation, Move move);

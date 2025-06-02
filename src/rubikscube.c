@@ -52,6 +52,37 @@ Cube* createCube(int side) {
 	return cube;
 }
 
+void resetCube(Cube* cube, int side) {
+	// Clear existing data
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			for (int k = 0; k < cube->side; k ++) {
+				free(ELEMENTAT(cube, i, j, k));
+			}
+		}
+	}
+	free(cube->blocks);
+	free(cube->selection);
+
+	// Insert new data
+	cube->side = side;
+	cube->blocks = malloc(side * side * side * sizeof(Block*));
+	for (int i = 0; i < side; i++) {
+		for (int j = 0; j < side; j++) {
+			for (int k = 0; k < side; k ++) {
+				Vector3 pos = {i, j, k};
+				ELEMENTAT(cube, i, j, k) = createBlock(pos, side);
+			}
+		}
+	}
+	cube->selection = malloc(sizeof(Selection));
+	cube->selection->row = side - 1;
+	cube->selection->column = side - 1;
+	cube->selection->enabled = false;
+	cube->selection->scale = 0.9f;
+	cube->selection->direction = -1;
+}
+
 void destroyCube(Cube *cube) {
 	for (int i = 0; i < cube->side; i++) {
 		for (int j = 0; j < cube->side; j++) {

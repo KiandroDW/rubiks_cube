@@ -10,6 +10,7 @@
 
 Block* createBlock(Vector3 position, int side);
 Cube* createCube(int side);
+void resetCube(Cube* cube, int side);
 void destroyCube(Cube* cube);
 
 void UpdateSelection(Cube* cube);
