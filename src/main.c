@@ -3,12 +3,51 @@
 #include "raylib.h"
 #include "rotatecube.h"
 #include "rubikscube.h"
+#include "rubikscubeparts.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-void DrawOverlay(int size, bool clockWiseRotation) {
+void DrawArrow(Vector2 start, Vector2 end, float arrowSize, Color color)
+{
+    DrawLineEx(start, end, 2.0f, color);
+
+    Vector2 direction = { end.x - start.x, end.y - start.y };
+    float length = sqrtf(direction.x * direction.x + direction.y * direction.y);
+    if (length == 0) return; // Avoid division by zero
+
+    direction.x /= length;
+    direction.y /= length;
+
+    Vector2 perp = { -direction.y, direction.x };
+
+    Vector2 tip = end;
+    Vector2 baseRight = {
+        tip.x - direction.x * arrowSize + perp.x * arrowSize * 0.5f,
+        tip.y - direction.y * arrowSize + perp.y * arrowSize * 0.5f
+    };
+    Vector2 baseLeft = {
+        tip.x - direction.x * arrowSize - perp.x * arrowSize * 0.5f,
+        tip.y - direction.y * arrowSize - perp.y * arrowSize * 0.5f
+    };
+
+    DrawTriangle(tip, baseLeft, baseRight, color);
+}
+
+void DrawElevatedRectangleRounded(Rectangle rec, float roundness, int segments, Color color) {
+	Rectangle bgrec = rec;
+	Color bgcol = color;
+	bgrec.x += 3;
+	bgrec.y += 3;
+	bgcol.r *= 0.9f;
+	bgcol.g *= 0.9f;
+	bgcol.b *= 0.9f;
+	DrawRectangleRounded(bgrec, roundness, segments, bgcol);
+	DrawRectangleRounded(rec, roundness, segments, color);
+}
+
+void DrawOverlay(int size, bool clockWiseRotation, bool selection) {
 	const char* labels[9] = {
         "X", "Y", "Z",
         "B", "U", "F",
@@ -17,15 +56,37 @@ void DrawOverlay(int size, bool clockWiseRotation) {
 	const char* bigText[2] = {"Counter-Clockwise", "Clockwise"};
 	float spacing = 10;
 	float smallRectSize = 75;
-
 	float bigRectWidth = 3 * smallRectSize + 2 * spacing;
 	float bigRectHeight = 75;
+
+	if (selection) {
+		DrawElevatedRectangleRounded((Rectangle) {1630, 305, 75, 75}, 0.2f, 10, SKYBLUE);
+		DrawArrow((Vector2) {1667, 360}, (Vector2) {1667, 325}, 15.0f, DARKBLUE);
+		DrawElevatedRectangleRounded((Rectangle) {1545, 390, 75, 75}, 0.2f, 10, SKYBLUE);
+		DrawArrow((Vector2) {1600, 428}, (Vector2) {1565, 428}, 15.0f, DARKBLUE);
+		DrawElevatedRectangleRounded((Rectangle) {1630, 390, 75, 75}, 0.2f, 10, SKYBLUE);
+		DrawArrow((Vector2) {1667, 410}, (Vector2) {1667, 445}, 15.0f, DARKBLUE);
+		DrawElevatedRectangleRounded((Rectangle) {1715, 390, 75, 75}, 0.2f, 10, SKYBLUE);
+		DrawArrow((Vector2) {1735, 428}, (Vector2) {1770, 428}, 15.0f, DARKBLUE);
+		// toggle selection mode
+		DrawElevatedRectangleRounded((Rectangle) {1545, 475, 245, 75}, 0.3f, 10, RED);
+		int textWidth = MeasureText("Disable cursor", 25);
+		DrawText("Disable cursor", 1545 + bigRectWidth / 2 - textWidth / 2, 475 + bigRectHeight / 2 - 10, 25, (Color) {98, 0, 0, 255});
+	} else {
+		DrawElevatedRectangleRounded((Rectangle) {1545, 475, 245, 75}, 0.3f, 10, GREEN);
+		int textWidth = MeasureText("Enable cursor", 25);
+		DrawText("Enable cursor", 1545 + bigRectWidth / 2 - textWidth / 2, 475 + bigRectHeight / 2 - 10, 25, DARKGREEN);
+
+	}
+
+	// toggle rotation
 	float bigRectX = 1800 - bigRectWidth - spacing;
 	float bigRectY = 900 - bigRectHeight - spacing - 3 * (smallRectSize + spacing);
-	DrawRectangleRounded((Rectangle){ bigRectX, bigRectY, bigRectWidth, bigRectHeight }, 0.3f, 10, LIGHTGRAY);
+	DrawElevatedRectangleRounded((Rectangle){ bigRectX, bigRectY, bigRectWidth, bigRectHeight }, 0.3f, 10, LIGHTGRAY);
 	int bigTextWidth = MeasureText(bigText[clockWiseRotation], 25);
 	DrawText(bigText[clockWiseRotation], bigRectX + bigRectWidth / 2 - bigTextWidth / 2, bigRectY + bigRectHeight / 2 - 10, 25, DARKGRAY);
 
+	// rotation buttons
 	float startX = 1800 - 3 * (smallRectSize + spacing);
 	float startY = 900 - 3 * (smallRectSize + spacing);
 
@@ -34,7 +95,7 @@ void DrawOverlay(int size, bool clockWiseRotation) {
 			int index = row * 3 + col;
 			float x = startX + col * (smallRectSize + spacing);
 			float y = startY + row * (smallRectSize + spacing);
-			DrawRectangleRounded((Rectangle){ x, y, smallRectSize, smallRectSize }, 0.2f, 10, SKYBLUE);
+			DrawElevatedRectangleRounded((Rectangle){ x, y, smallRectSize, smallRectSize }, 0.2f, 10, SKYBLUE);
 
 			int textWidth = MeasureText(labels[index], 25);
 			DrawText(labels[index], x + smallRectSize / 2 - textWidth / 2, y + smallRectSize / 2 - 10, 25, DARKBLUE);
@@ -44,15 +105,14 @@ void DrawOverlay(int size, bool clockWiseRotation) {
 	// Cube size
 	char res[4];
 	sprintf(res, "%d", size);
-	DrawRectangleRounded((Rectangle) {10, 730, 200, 75}, 0.3f, 10, LIGHTGRAY);
+	DrawElevatedRectangleRounded((Rectangle) {10, 730, 200, 75}, 0.3f, 10, LIGHTGRAY);
 	DrawText("-", 30, 750, 40, BLACK);
 	DrawText("+", 170, 750, 40, BLACK);
 	int textWidth = MeasureText(res, 40);
 	DrawText(res, 105 - textWidth / 2, 750, 40, BLACK);
 
 	// Shuffle button
-	sprintf(res, "%d", size);
-	DrawRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, SKYBLUE);
+	DrawElevatedRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, SKYBLUE);
 	textWidth = MeasureText("Shuffle", 40);
 	DrawText("Shuffle", 105 - textWidth / 2, 835, 40, DARKBLUE);
 }
@@ -91,11 +151,53 @@ void ControlButtons(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool*
 			anim->rotating = false;
 			anim->finished = false;
 		}
+	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 380 && mousePosition.y >= 305 && cube->selection->enabled) {
+		// cursor up
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			cube->selection->row++;
+			if (cube->selection->row >= cube->side){
+				cube->selection->row = 0;
+			}
+		}
+	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 465 && mousePosition.y >= 390 && cube->selection->enabled) {
+		// cursor right
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			cube->selection->column--;
+			if (cube->selection->column < 0){
+				cube->selection->column = cube->side - 1;
+			}
+		}
+	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 465 && mousePosition.y >= 390 && cube->selection->enabled) {
+		// cursor down
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			cube->selection->row--;
+			if (cube->selection->row < 0){
+				cube->selection->row = cube->side - 1;
+			}
+		}
+	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 465 && mousePosition.y >= 390 && cube->selection->enabled) {
+		// cursor left
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			cube->selection->column++;
+			if (cube->selection->column >= cube->side){
+				cube->selection->column = 0;
+			}
+		}
+	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1545 && mousePosition.y <= 550 && mousePosition.y >= 475) {
+		// Switch selection
+		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			cube->selection->enabled = ! cube->selection->enabled;
+		}
 	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1545 && mousePosition.y <= 635 && mousePosition.y >= 560) {
 		// Switch rotation
 		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
 		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			*clockWiseRotation = (*clockWiseRotation + 1) % 2;
+			*clockWiseRotation = ! *clockWiseRotation;
 		}
 	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 720 && mousePosition.y >= 645) {
 		// Z
@@ -492,7 +594,7 @@ int main(int argc, char* argv[]) {
 
 			DrawFPS(20, 20);
 
-			DrawOverlay(cube->side, clockWiseRotation);
+			DrawOverlay(cube->side, clockWiseRotation, cube->selection->enabled);
 
 			DrawQueue(queue);
 
