@@ -10,6 +10,7 @@ typedef struct {
 	int type;
 	void (*onClick)(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise);
 	Color color;
+	bool pressed;
 } Button;
 
 void drawButton(Button* button, int size, bool clockwise, bool selection);

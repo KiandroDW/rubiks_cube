@@ -258,18 +258,29 @@ Button* callButtons() {
 void drawButtonBackground(Button* button) {
 	Rectangle rec = button->rec;
 	Rectangle bgrec = rec;
-	bgrec.width += 2;
-	bgrec.height += 2;
-	bgrec.x++;
-	bgrec.y++;
 	Color bgcol = {
 		button->color.r * 0.8f,
 		button->color.g * 0.8f,
 		button->color.b * 0.8f,
 		button->color.a
 	};
-	DrawRectangleRounded(bgrec, 0.3f, 10, bgcol);
-	DrawRectangleRounded(rec, 0.3f, 10, button->color);
+	if (button->pressed) {
+		rec.x += 2;
+		rec.y += 2;
+		bgrec.width += 1;
+		bgrec.height += 1;
+		bgrec.x += 2;
+		bgrec.y += 2;
+		DrawRectangleRounded(bgrec, 0.3f, 10, bgcol);
+		DrawRectangleRounded(rec, 0.3f, 10, button->color);
+	} else {
+		bgrec.width += 2;
+		bgrec.height += 2;
+		bgrec.x++;
+		bgrec.y++;
+		DrawRectangleRounded(bgrec, 0.3f, 10, bgcol);
+		DrawRectangleRounded(rec, 0.3f, 10, button->color);
+	}
 }
 
 void drawButtonText(Button* button, const char* text) {
@@ -364,11 +375,15 @@ void drawButton(Button* button, int size, bool clockwise, bool selection) {
 }
 
 bool hovering(Button* button, bool selection) {
+	button->pressed = false;
 	if (button->type == 1 || (!selection && button->type > 1)) {
 		return false;
 	}
 	Vector2 mousePos = GetMousePosition();
 	if (mousePos.x >= button->rec.x && mousePos.x <= button->rec.x + button->rec.width && mousePos.y >= button->rec.y && mousePos.y <= button->rec.y + button->rec.height) {
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+			button->pressed = true;
+		}
 		return true;
 	}
 	return false;

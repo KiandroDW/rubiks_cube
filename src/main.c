@@ -10,10 +10,8 @@
 #include <time.h>
 
 void handleKeys(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
-	if(IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-		*clockwise = false;
-	} else {
-		*clockwise = true;
+	if(IsKeyPressed(KEY_LEFT_SHIFT) || IsKeyPressed(KEY_RIGHT_SHIFT)) {
+		*clockwise = !*clockwise;
 	}
 	int key = GetKeyPressed();
 	switch (key) {
