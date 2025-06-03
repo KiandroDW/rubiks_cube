@@ -1,99 +1,40 @@
 #include "rubikscube.h"
 #include "raylib.h"
+#include "rotatecube.h"
+#include "rubikscubeparts.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-Block* createBlock(Vector3 position, int side) {
-	/*
-	 *	Righthanded system: x = forwards, y = upwards, z = leftwards
-	 */
-	Colors colors = {0};
-	if (position.x == side - 1) {
-		colors.front = GREEN;
-	}
-	if (position.x == 0) {
-		colors.back = BLUE;
-	}
-	if (position.y == side - 1) {
-		colors.up = WHITE;
-	}
-	if (position.y == 0) {
-		colors.down = YELLOW;
-	}
-	if (position.z == side - 1) {
-		colors.left = ORANGE;
-	}
-	if (position.z == 0) {
-		colors.right = RED;
-	}
-	Block* block = malloc(sizeof(Block));
-	block->colors = colors;
-	return block;
-}
+void shuffle(Cube* cube, MoveQueue* queue) {
+	int previous_axis = -1;
+	int previous_layer = -1;
+	int chosen_axis;
+	int chosen_layer;
+	int chosen_direction;
+	Vector3 chosen_vector;
 
-Cube* createCube(int side) {
-	Cube* cube = malloc(sizeof(Cube));
-	cube->side = side;
-	cube->blocks = malloc(side * side * side * sizeof(Block*));
-	for (int i = 0; i < side; i++) {
-		for (int j = 0; j < side; j++) {
-			for (int k = 0; k < side; k ++) {
-				Vector3 pos = {i, j, k};
-				ELEMENTAT(cube, i, j, k) = createBlock(pos, side);
-			}
+	for (int i = 0; i < cube->side * 10; i++) {
+		chosen_axis = rand() % 3;
+		chosen_layer = rand() % cube->side;
+		while ((chosen_axis == previous_axis && chosen_layer == previous_layer) || (cube->side % 2 == 1 && chosen_layer == (cube->side-1) / 2)) {
+			chosen_axis = rand() % 3;
+			chosen_layer = rand() % cube->side;
 		}
-	}
-	cube->selection = malloc(sizeof(Selection));
-	cube->selection->row = side - 1;
-	cube->selection->column = side - 1;
-	cube->selection->enabled = false;
-	cube->selection->scale = 0.9f;
-	cube->selection->direction = -1;
-	return cube;
-}
+		if (chosen_axis == 0)
+			chosen_vector = (Vector3) {1, 0, 0};
+		if (chosen_axis == 1)
+			chosen_vector = (Vector3) {0, 1, 0};
+		if (chosen_axis == 2)
+			chosen_vector = (Vector3) {0, 0, 1};
 
-void resetCube(Cube* cube, int side) {
-	// Clear existing data
-	for (int i = 0; i < cube->side; i++) {
-		for (int j = 0; j < cube->side; j++) {
-			for (int k = 0; k < cube->side; k ++) {
-				free(ELEMENTAT(cube, i, j, k));
-			}
+		chosen_direction = rand() % 2;
+		if (chosen_direction == 0) {
+			chosen_direction = 1;
 		}
-	}
-	free(cube->blocks);
-	free(cube->selection);
 
-	// Insert new data
-	cube->side = side;
-	cube->blocks = malloc(side * side * side * sizeof(Block*));
-	for (int i = 0; i < side; i++) {
-		for (int j = 0; j < side; j++) {
-			for (int k = 0; k < side; k ++) {
-				Vector3 pos = {i, j, k};
-				ELEMENTAT(cube, i, j, k) = createBlock(pos, side);
-			}
-		}
+		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
+		addElement(selected_move, queue);
 	}
-	cube->selection = malloc(sizeof(Selection));
-	cube->selection->row = side - 1;
-	cube->selection->column = side - 1;
-	cube->selection->enabled = false;
-	cube->selection->scale = 0.9f;
-	cube->selection->direction = -1;
-}
-
-void destroyCube(Cube *cube) {
-	for (int i = 0; i < cube->side; i++) {
-		for (int j = 0; j < cube->side; j++) {
-			for (int k = 0; k < cube->side; k ++) {
-				free(ELEMENTAT(cube, i, j, k));
-			}
-		}
-	}
-	free(cube->blocks);
-	free(cube->selection);
-	free(cube);
 }
 
 int rotateBlock(Block* block,  Rotation rotation) {
@@ -149,6 +90,7 @@ int rotateBlock(Block* block,  Rotation rotation) {
 	}
 	return status;
 }
+
 
 void rotateXYplaneDown(Cube* cube, int plane) {
 	Block* temp[cube->side][cube->side];
@@ -274,38 +216,6 @@ void executeMove(Cube* cube, Move move) {
 	}
 }
 
-void shuffle(Cube* cube, MoveQueue* queue) {
-	int previous_axis = -1;
-	int previous_layer = -1;
-	int chosen_axis;
-	int chosen_layer;
-	int chosen_direction;
-	Vector3 chosen_vector;
-
-	for (int i = 0; i < cube->side * 10; i++) {
-		chosen_axis = rand() % 3;
-		chosen_layer = rand() % cube->side;
-		while ((chosen_axis == previous_axis && chosen_layer == previous_layer) || (cube->side % 2 == 1 && chosen_layer == (cube->side-1) / 2)) {
-			chosen_axis = rand() % 3;
-			chosen_layer = rand() % cube->side;
-		}
-		if (chosen_axis == 0)
-			chosen_vector = (Vector3) {1, 0, 0};
-		if (chosen_axis == 1)
-			chosen_vector = (Vector3) {0, 1, 0};
-		if (chosen_axis == 2)
-			chosen_vector = (Vector3) {0, 0, 1};
-
-		chosen_direction = rand() % 2;
-		if (chosen_direction == 0) {
-			chosen_direction = 1;
-		}
-
-		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
-		addElement(selected_move, queue);
-	}
-}
-
 void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 	switch (rotation) {
 		case CLOCKWISE:
@@ -381,10 +291,145 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 	}
 };
 
-void UpdateSelection(Cube* cube) {
+void updateSelection(Cube* cube) {
 	Selection* selection = cube->selection;
 	selection->scale += selection->direction * 0.01f;
 	if (selection->scale <= 0.7f || selection->scale >= 0.9f) {
 		selection->direction *= -1;
+	}
+}
+
+void rightMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
+	Move move;
+	move.axis = (Vector3) {0, 0, 1};
+	if (cube->selection->enabled) {
+		move.layer = cube->selection->column;
+	} else {
+		move.layer = 0;
+	}
+	if (*clockwise == false) {
+		move.direction = 1;
+		addElement(move, queue);
+	} else {
+		move.direction = -1;
+		addElement(move, queue);
+	}
+}
+
+void leftMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
+	Move move;
+	move.axis = (Vector3) {0, 0, 1};
+	if (cube->selection->enabled) {
+		move.layer = cube->selection->column;
+	} else {
+		move.layer = cube->side - 1;
+	}
+	if (*clockwise == false) {
+		move.direction = -1;
+		addElement(move, queue);
+	} else {
+		move.direction = 1;
+		addElement(move, queue);
+	}
+}
+
+void downMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
+	Move move;
+	move.axis = (Vector3) {0, 1, 0};
+	if (cube->selection->enabled) {
+		move.layer = cube->selection->column;
+	} else {
+		move.layer = 0;
+	}
+	if (*clockwise == false) {
+		move.direction = 1;
+		addElement(move, queue);
+	} else {
+		move.direction = -1;
+		addElement(move, queue);
+	}
+}
+
+void upMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
+	Move move;
+	move.axis = (Vector3) {0, 1, 0};
+	if (cube->selection->enabled) {
+		move.layer = cube->selection->column;
+	} else {
+		move.layer = cube->side - 1;
+	}
+	if (*clockwise == false) {
+		move.direction = -1;
+		addElement(move, queue);
+	} else {
+		move.direction = 1;
+		addElement(move, queue);
+	}
+}
+
+void backMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
+	Move move;
+	move.axis = (Vector3) {1, 0, 0};
+	move.layer = 0;
+	if (*clockwise == false) {
+		move.direction = 1;
+		addElement(move, queue);
+	} else {
+		move.direction = -1;
+		addElement(move, queue);
+	}
+}
+
+void frontMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
+	Move move;
+	move.axis = (Vector3) {1, 0, 0};
+	move.layer = cube->side - 1;
+	if (*clockwise == false) {
+		move.direction = -1;
+		addElement(move, queue);
+	} else {
+		move.direction = 1;
+		addElement(move, queue);
+	}
+}
+
+void rotateCubeX(Cube* cube, RotationAnimation* anim, bool* clockwise) {
+	if (!*clockwise) {
+		rotateCube(cube, COUNTERCLOCKWISE, anim);
+	} else {
+		rotateCube(cube, CLOCKWISE, anim);
+	}
+}
+
+void rotateCubeY(Cube* cube, RotationAnimation* anim, bool* clockwise) {
+	if (!*clockwise) {
+		rotateCube(cube, RIGHTWARDS, anim);
+	} else {
+		rotateCube(cube, LEFTWARDS, anim);
+	}
+}
+
+void rotateCubeZ(Cube* cube, RotationAnimation* anim, bool* clockwise) {
+	if (!*clockwise) {
+		rotateCube(cube, UPWARDS, anim);
+	} else {
+		rotateCube(cube, DOWNWARDS, anim);
+	}
+}
+
+void moveSelection(Cube* cube, int amountX, int amountY) {
+	if (cube->selection->enabled) {
+		cube->selection->column += amountX;
+		cube->selection->row += amountY;
+		if (cube->selection->column > cube->side - 1) {
+			cube->selection->column = 0;
+		} else if (cube->selection->column < 0) {
+			cube->selection->column = cube->side - 1;
+		}
+		if (cube->selection->row > cube->side - 1) {
+			cube->selection->row = 0;
+		} else if (cube->selection->row < 0) {
+			cube->selection->row = cube->side - 1;
+		}
 	}
 }

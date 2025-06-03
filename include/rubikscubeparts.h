@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 
+#define ELEMENTAT(cube, i, j, k) cube->blocks[i * cube->side * cube->side + j * cube->side + k]
+
 typedef struct {
 	int row;
 	int column;
@@ -45,4 +47,11 @@ typedef enum {
 	UPWARDS
 } Rotation;
 
+
+Block* createBlock(Vector3 position, int side);
+Cube* createCube(int side);
+void resetCube(Cube* cube, int side);
+void destroyCube(Cube* cube);
+
+void updateSelection(Cube* cube);
 #endif

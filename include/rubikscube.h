@@ -2,23 +2,25 @@
 #define RUBIKSCUBE
 
 #include "queue.h"
-#include "raylib.h"
 #include "rotatecube.h"
 #include "rubikscubeparts.h"
 
-#define ELEMENTAT(cube, i, j, k) cube->blocks[i * cube->side * cube->side + j * cube->side + k]
-
-Block* createBlock(Vector3 position, int side);
-Cube* createCube(int side);
-void resetCube(Cube* cube, int side);
-void destroyCube(Cube* cube);
-
-void UpdateSelection(Cube* cube);
 
 void executeMove(Cube* cube, Move move);
 
 void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* rotationAnimation);
 
 void shuffle(Cube* cube, MoveQueue* queue);
+
+void rightMove(Cube* cube, MoveQueue* queue, bool* clockwise);
+void leftMove(Cube* cube, MoveQueue* queue, bool* clockwise);
+void upMove(Cube* cube, MoveQueue* queue, bool* clockwise);
+void downMove(Cube* cube, MoveQueue* queue, bool* clockwise);
+void frontMove(Cube* cube, MoveQueue* queue, bool* clockwise);
+void backMove(Cube* cube, MoveQueue* queue, bool* clockwise);
+void rotateCubeX(Cube* cube, RotationAnimation* anim, bool* clockwise);
+void rotateCubeY(Cube* cube, RotationAnimation* anim, bool* clockwise);
+void rotateCubeZ(Cube* cube, RotationAnimation* anim, bool* clockwise);
+void moveSelection(Cube* cube, int amountX, int amountY);
 
 #endif
