@@ -16,19 +16,19 @@ void handleKeys(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clo
 	int key = GetKeyPressed();
 	switch (key) {
 		case KEY_RIGHT:
-			moveSelection(cube, -1, 0);
+			moveCursor(cube, -1, 0);
 			break;
 		case KEY_LEFT:
-			moveSelection(cube, 1, 0);
+			moveCursor(cube, 1, 0);
 			break;
 		case KEY_DOWN:
-			moveSelection(cube, 0, -1);
+			moveCursor(cube, 0, -1);
 			break;
 		case KEY_UP:
-			moveSelection(cube, 0, 1);
+			moveCursor(cube, 0, 1);
 			break;
-		case KEY_S:
-			cube->selection->enabled = !cube->selection->enabled;
+		case KEY_C:
+			cube->cursor->enabled = !cube->cursor->enabled;
 			break;
 		case KEY_R:
 			rightMove(cube, queue, clockwise);
@@ -108,7 +108,7 @@ int main() {
 		handleKeys(cube, queue, rotationAnimation, &clockwise);
 		Button* selected = NULL;
 		for (int i = 0; i < 19; i++) {
-			if (hovering(&buttons[i], cube->selection->enabled)) {
+			if (hovering(&buttons[i], cube->cursor->enabled)) {
 				selected = &buttons[i];
 				break;
 			}
@@ -122,7 +122,7 @@ int main() {
 			SetMouseCursor(0);
 		}
 		updateRotation(rotationAnimation);
-		updateSelection(cube);
+		updateCursor(cube);
 
 		if (rotationAnimation->delay == 0 && queue->start != NULL) {
 			rotationAnimation->delay = 7;
@@ -192,7 +192,7 @@ int main() {
 			DrawFPS(20, 20);
 
 			for (int i = 0; i < 19; i++) {
-				drawButton(&buttons[i], cube->side, clockwise, cube->selection->enabled);
+				drawButton(&buttons[i], cube->side, clockwise, cube->cursor->enabled);
 			}
 
 			drawQueue(queue);

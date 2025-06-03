@@ -21,6 +21,6 @@ void backMove(Cube* cube, MoveQueue* queue, bool* clockwise);
 void rotateCubeX(Cube* cube, RotationAnimation* anim, bool* clockwise);
 void rotateCubeY(Cube* cube, RotationAnimation* anim, bool* clockwise);
 void rotateCubeZ(Cube* cube, RotationAnimation* anim, bool* clockwise);
-void moveSelection(Cube* cube, int amountX, int amountY);
+void moveCursor(Cube* cube, int amountX, int amountY);
 
 #endif

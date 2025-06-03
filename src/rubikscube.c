@@ -291,19 +291,19 @@ void rotateCube(Cube* cube, Rotation rotation, RotationAnimation* anim) {
 	}
 };
 
-void updateSelection(Cube* cube) {
-	Selection* selection = cube->selection;
-	selection->scale += selection->direction * 0.01f;
-	if (selection->scale <= 0.7f || selection->scale >= 0.9f) {
-		selection->direction *= -1;
+void updateCursor(Cube* cube) {
+	Cursor* cursor = cube->cursor;
+	cursor->scale += cursor->direction * 0.01f;
+	if (cursor->scale <= 0.7f || cursor->scale >= 0.9f) {
+		cursor->direction *= -1;
 	}
 }
 
 void rightMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 0, 1};
-	if (cube->selection->enabled) {
-		move.layer = cube->selection->column;
+	if (cube->cursor->enabled) {
+		move.layer = cube->cursor->column;
 	} else {
 		move.layer = 0;
 	}
@@ -319,8 +319,8 @@ void rightMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 void leftMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 0, 1};
-	if (cube->selection->enabled) {
-		move.layer = cube->selection->column;
+	if (cube->cursor->enabled) {
+		move.layer = cube->cursor->column;
 	} else {
 		move.layer = cube->side - 1;
 	}
@@ -336,8 +336,8 @@ void leftMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 void downMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 1, 0};
-	if (cube->selection->enabled) {
-		move.layer = cube->selection->column;
+	if (cube->cursor->enabled) {
+		move.layer = cube->cursor->column;
 	} else {
 		move.layer = 0;
 	}
@@ -353,8 +353,8 @@ void downMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 void upMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 1, 0};
-	if (cube->selection->enabled) {
-		move.layer = cube->selection->column;
+	if (cube->cursor->enabled) {
+		move.layer = cube->cursor->column;
 	} else {
 		move.layer = cube->side - 1;
 	}
@@ -417,19 +417,19 @@ void rotateCubeZ(Cube* cube, RotationAnimation* anim, bool* clockwise) {
 	}
 }
 
-void moveSelection(Cube* cube, int amountX, int amountY) {
-	if (cube->selection->enabled) {
-		cube->selection->column += amountX;
-		cube->selection->row += amountY;
-		if (cube->selection->column > cube->side - 1) {
-			cube->selection->column = 0;
-		} else if (cube->selection->column < 0) {
-			cube->selection->column = cube->side - 1;
+void moveCursor(Cube* cube, int amountX, int amountY) {
+	if (cube->cursor->enabled) {
+		cube->cursor->column += amountX;
+		cube->cursor->row += amountY;
+		if (cube->cursor->column > cube->side - 1) {
+			cube->cursor->column = 0;
+		} else if (cube->cursor->column < 0) {
+			cube->cursor->column = cube->side - 1;
 		}
-		if (cube->selection->row > cube->side - 1) {
-			cube->selection->row = 0;
-		} else if (cube->selection->row < 0) {
-			cube->selection->row = cube->side - 1;
+		if (cube->cursor->row > cube->side - 1) {
+			cube->cursor->row = 0;
+		} else if (cube->cursor->row < 0) {
+			cube->cursor->row = cube->side - 1;
 		}
 	}
 }

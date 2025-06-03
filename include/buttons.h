@@ -13,7 +13,7 @@ typedef struct {
 	bool pressed;
 } Button;
 
-void drawButton(Button* button, int size, bool clockwise, bool selection);
-bool hovering(Button* button, bool selection);
+void drawButton(Button* button, int size, bool clockwise, bool cursor);
+bool hovering(Button* button, bool cursor);
 Button* callButtons();
 #endif

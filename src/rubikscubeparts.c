@@ -42,12 +42,12 @@ Cube* createCube(int side) {
 			}
 		}
 	}
-	cube->selection = malloc(sizeof(Selection));
-	cube->selection->row = side - 1;
-	cube->selection->column = side - 1;
-	cube->selection->enabled = false;
-	cube->selection->scale = 0.9f;
-	cube->selection->direction = -1;
+	cube->cursor = malloc(sizeof(Cursor));
+	cube->cursor->row = side - 1;
+	cube->cursor->column = side - 1;
+	cube->cursor->enabled = false;
+	cube->cursor->scale = 0.9f;
+	cube->cursor->direction = -1;
 	return cube;
 }
 
@@ -61,7 +61,7 @@ void resetCube(Cube* cube, int side) {
 		}
 	}
 	free(cube->blocks);
-	free(cube->selection);
+	free(cube->cursor);
 
 	// Insert new data
 	cube->side = side;
@@ -74,12 +74,12 @@ void resetCube(Cube* cube, int side) {
 			}
 		}
 	}
-	cube->selection = malloc(sizeof(Selection));
-	cube->selection->row = side - 1;
-	cube->selection->column = side - 1;
-	cube->selection->enabled = false;
-	cube->selection->scale = 0.9f;
-	cube->selection->direction = -1;
+	cube->cursor = malloc(sizeof(Cursor));
+	cube->cursor->row = side - 1;
+	cube->cursor->column = side - 1;
+	cube->cursor->enabled = false;
+	cube->cursor->scale = 0.9f;
+	cube->cursor->direction = -1;
 }
 
 void destroyCube(Cube *cube) {
@@ -91,7 +91,7 @@ void destroyCube(Cube *cube) {
 		}
 	}
 	free(cube->blocks);
-	free(cube->selection);
+	free(cube->cursor);
 	free(cube);
 }
 

@@ -1,7 +1,6 @@
 #include "drawrubikscube.h"
 #include "raylib.h"
 #include "rlgl.h"
-#include "rubikscube.h"
 #include <stdbool.h>
 
 #define COLISNULL(color) \
@@ -10,8 +9,8 @@
 void drawLayer(Cube* cube, RotationAnimation* anim, int x_0, int dx, int y_0, int dy, int z_0, int dz) {
 	const float planeHeight = 0.1f;
 	const float planeLength = 0.9f;
-	int selected_row = cube->selection->row;
-	int selected_column = cube->selection->column;
+	int selected_row = cube->cursor->row;
+	int selected_column = cube->cursor->column;
 
 	for (int i = x_0; i < x_0 + dx; i++) {
 		for (int j = y_0; j < y_0 + dy; j++) {
@@ -47,8 +46,8 @@ void drawLayer(Cube* cube, RotationAnimation* anim, int x_0, int dx, int y_0, in
 				planeCenter.x += 1;
 				if (!COLISNULL(colors.front)) {
 					// Front
-					if (cube->selection->enabled && i == cube->side - 1 && j == selected_row && k == selected_column) {
-						float scale = cube->selection->scale;
+					if (cube->cursor->enabled && i == cube->side - 1 && j == selected_row && k == selected_column) {
+						float scale = cube->cursor->scale;
 						DrawCube(planeCenter, planeHeight, planeLength * scale, planeLength * scale, colors.front);
 					} else {
 						DrawCube(planeCenter, planeHeight, planeLength, planeLength, colors.front);

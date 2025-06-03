@@ -29,7 +29,7 @@ void onClickPass(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* cl
 }
 
 void toggleCursor(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
-	cube->selection->enabled = !cube->selection->enabled;
+	cube->cursor->enabled = !cube->cursor->enabled;
 }
 
 void toggleRotation(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
@@ -99,19 +99,19 @@ void decreaseDimension(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bo
 }
 
 void cursorRight(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
-	moveSelection(cube, -1, 0);
+	moveCursor(cube, -1, 0);
 }
 
 void cursorLeft(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
-	moveSelection(cube, 1, 0);
+	moveCursor(cube, 1, 0);
 }
 
 void cursorUp(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
-	moveSelection(cube, 0, 1);
+	moveCursor(cube, 0, 1);
 }
 
 void cursorDown(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
-	moveSelection(cube, 0, -1);
+	moveCursor(cube, 0, -1);
 }
 
 Button buttons[19] = {
@@ -326,11 +326,11 @@ void drawArrow(Vector2 start, Vector2 end, float arrowSize, Color color)
     DrawTriangle(tip, baseLeft, baseRight, color);
 }
 
-void drawButton(Button* button, int size, bool clockwise, bool selection) {
-	if (selection && button->type == -12) {
+void drawButton(Button* button, int size, bool clockwise, bool cursor) {
+	if (cursor && button->type == -12) {
 		button->type = -13;
 		button->color = RED;
-	} else if (! selection && button->type == -13) {
+	} else if (! cursor && button->type == -13) {
 		button->type = -12;
 		button->color = GREEN;
 	}
@@ -339,7 +339,7 @@ void drawButton(Button* button, int size, bool clockwise, bool selection) {
 	} else if (! clockwise && button->type == -11) {
 		button->type = -10;
 	}
-	if (button->type <= 1 || selection) {
+	if (button->type <= 1 || cursor) {
 		drawButtonBackground(button);
 	}
 	if (button->type <= 0) {
@@ -350,8 +350,8 @@ void drawButton(Button* button, int size, bool clockwise, bool selection) {
 		char res[4];
 		sprintf(res, "%d", size);
 		drawButtonText(button, res);
-	} else if (selection) {
-		// Arrow buttons (only when selection is enabled)
+	} else if (cursor) {
+		// Arrow buttons (only when cursor is enabled)
 		Color arrowCol = {
 			button->color.r * 0.5f,
 			button->color.g * 0.5f,
@@ -374,9 +374,9 @@ void drawButton(Button* button, int size, bool clockwise, bool selection) {
 	}
 }
 
-bool hovering(Button* button, bool selection) {
+bool hovering(Button* button, bool cursor) {
 	button->pressed = false;
-	if (button->type == 1 || (!selection && button->type > 1)) {
+	if (button->type == 1 || (!cursor && button->type > 1)) {
 		return false;
 	}
 	Vector2 mousePos = GetMousePosition();

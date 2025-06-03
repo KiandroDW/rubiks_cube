@@ -11,7 +11,7 @@ typedef struct {
 	bool enabled;
 	float scale;
 	int direction;
-} Selection;
+} Cursor;
 
 typedef struct {
 	Color back;
@@ -29,7 +29,7 @@ typedef struct {
 typedef struct {
 	int side;
 	Block** blocks;
-	Selection* selection;
+	Cursor* cursor;
 } Cube;
 
 typedef struct {
@@ -53,5 +53,5 @@ Cube* createCube(int side);
 void resetCube(Cube* cube, int side);
 void destroyCube(Cube* cube);
 
-void updateSelection(Cube* cube);
+void updateCursor(Cube* cube);
 #endif
