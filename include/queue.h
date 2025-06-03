@@ -82,7 +82,7 @@ static void _translateMove(char* result, Move* move) {
 	}
 }
 
-static void DrawQueue(MoveQueue* queue) {
+static void drawQueue(MoveQueue* queue) {
 	MoveQueueElement* current = queue->start;
 	int counter = 0;
 	char text[5];

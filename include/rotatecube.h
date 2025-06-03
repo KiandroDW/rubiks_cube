@@ -13,10 +13,10 @@ typedef struct {
 	int delay;
 } RotationAnimation;
 
-void StartRotation(RotationAnimation* rotationAnimation, Move move);
+void startRotation(RotationAnimation* rotationAnimation, Move move);
 
-void UpdateRotation(RotationAnimation* rotationAnimation);
+void updateRotation(RotationAnimation* rotationAnimation);
 
-void DecodeMove(Cube* cube, RotationAnimation* rotationAnimation);
+void decodeMove(Cube* cube, RotationAnimation* rotationAnimation);
 
 #endif

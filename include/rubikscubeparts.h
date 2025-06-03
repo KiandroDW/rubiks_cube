@@ -3,13 +3,15 @@
 
 #include "raylib.h"
 
+#define ELEMENTAT(cube, i, j, k) cube->blocks[i * cube->side * cube->side + j * cube->side + k]
+
 typedef struct {
 	int row;
 	int column;
 	bool enabled;
 	float scale;
 	int direction;
-} Selection;
+} Cursor;
 
 typedef struct {
 	Color back;
@@ -27,7 +29,7 @@ typedef struct {
 typedef struct {
 	int side;
 	Block** blocks;
-	Selection* selection;
+	Cursor* cursor;
 } Cube;
 
 typedef struct {
@@ -45,4 +47,11 @@ typedef enum {
 	UPWARDS
 } Rotation;
 
+
+Block* createBlock(Vector3 position, int side);
+Cube* createCube(int side);
+void resetCube(Cube* cube, int side);
+void destroyCube(Cube* cube);
+
+void updateCursor(Cube* cube);
 #endif

@@ -1,3 +1,4 @@
+#include "buttons.h"
 #include "drawrubikscube.h"
 #include "queue.h"
 #include "raylib.h"
@@ -5,342 +6,64 @@
 #include "rubikscube.h"
 #include "rubikscubeparts.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-void DrawArrow(Vector2 start, Vector2 end, float arrowSize, Color color)
-{
-    DrawLineEx(start, end, 2.0f, color);
-
-    Vector2 direction = { end.x - start.x, end.y - start.y };
-    float length = sqrtf(direction.x * direction.x + direction.y * direction.y);
-    if (length == 0) return; // Avoid division by zero
-
-    direction.x /= length;
-    direction.y /= length;
-
-    Vector2 perp = { -direction.y, direction.x };
-
-    Vector2 tip = end;
-    Vector2 baseRight = {
-        tip.x - direction.x * arrowSize + perp.x * arrowSize * 0.5f,
-        tip.y - direction.y * arrowSize + perp.y * arrowSize * 0.5f
-    };
-    Vector2 baseLeft = {
-        tip.x - direction.x * arrowSize - perp.x * arrowSize * 0.5f,
-        tip.y - direction.y * arrowSize - perp.y * arrowSize * 0.5f
-    };
-
-    DrawTriangle(tip, baseLeft, baseRight, color);
-}
-
-void DrawElevatedRectangleRounded(Rectangle rec, float roundness, int segments, Color color) {
-	Rectangle bgrec = rec;
-	Color bgcol = color;
-	bgrec.x += 3;
-	bgrec.y += 3;
-	bgcol.r *= 0.9f;
-	bgcol.g *= 0.9f;
-	bgcol.b *= 0.9f;
-	DrawRectangleRounded(bgrec, roundness, segments, bgcol);
-	DrawRectangleRounded(rec, roundness, segments, color);
-}
-
-void DrawOverlay(int size, bool clockWiseRotation, bool selection) {
-	const char* labels[9] = {
-        "X", "Y", "Z",
-        "B", "U", "F",
-        "L", "D", "R"
-    };
-	const char* bigText[2] = {"Counter-Clockwise", "Clockwise"};
-	float spacing = 10;
-	float smallRectSize = 75;
-	float bigRectWidth = 3 * smallRectSize + 2 * spacing;
-	float bigRectHeight = 75;
-
-	if (selection) {
-		DrawElevatedRectangleRounded((Rectangle) {1630, 305, 75, 75}, 0.2f, 10, SKYBLUE);
-		DrawArrow((Vector2) {1667, 360}, (Vector2) {1667, 325}, 15.0f, DARKBLUE);
-		DrawElevatedRectangleRounded((Rectangle) {1545, 390, 75, 75}, 0.2f, 10, SKYBLUE);
-		DrawArrow((Vector2) {1600, 428}, (Vector2) {1565, 428}, 15.0f, DARKBLUE);
-		DrawElevatedRectangleRounded((Rectangle) {1630, 390, 75, 75}, 0.2f, 10, SKYBLUE);
-		DrawArrow((Vector2) {1667, 410}, (Vector2) {1667, 445}, 15.0f, DARKBLUE);
-		DrawElevatedRectangleRounded((Rectangle) {1715, 390, 75, 75}, 0.2f, 10, SKYBLUE);
-		DrawArrow((Vector2) {1735, 428}, (Vector2) {1770, 428}, 15.0f, DARKBLUE);
-		// toggle selection mode
-		DrawElevatedRectangleRounded((Rectangle) {1545, 475, 245, 75}, 0.3f, 10, RED);
-		int textWidth = MeasureText("Disable cursor", 25);
-		DrawText("Disable cursor", 1545 + bigRectWidth / 2 - textWidth / 2, 475 + bigRectHeight / 2 - 10, 25, (Color) {98, 0, 0, 255});
-	} else {
-		DrawElevatedRectangleRounded((Rectangle) {1545, 475, 245, 75}, 0.3f, 10, GREEN);
-		int textWidth = MeasureText("Enable cursor", 25);
-		DrawText("Enable cursor", 1545 + bigRectWidth / 2 - textWidth / 2, 475 + bigRectHeight / 2 - 10, 25, DARKGREEN);
-
+void handleKeys(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockwise) {
+	if(IsKeyPressed(KEY_LEFT_SHIFT) || IsKeyPressed(KEY_RIGHT_SHIFT)) {
+		*clockwise = !*clockwise;
 	}
-
-	// toggle rotation
-	float bigRectX = 1800 - bigRectWidth - spacing;
-	float bigRectY = 900 - bigRectHeight - spacing - 3 * (smallRectSize + spacing);
-	DrawElevatedRectangleRounded((Rectangle){ bigRectX, bigRectY, bigRectWidth, bigRectHeight }, 0.3f, 10, LIGHTGRAY);
-	int bigTextWidth = MeasureText(bigText[clockWiseRotation], 25);
-	DrawText(bigText[clockWiseRotation], bigRectX + bigRectWidth / 2 - bigTextWidth / 2, bigRectY + bigRectHeight / 2 - 10, 25, DARKGRAY);
-
-	// rotation buttons
-	float startX = 1800 - 3 * (smallRectSize + spacing);
-	float startY = 900 - 3 * (smallRectSize + spacing);
-
-	for (int row = 0; row < 3; row++) {
-		for (int col = 0; col < 3; col++) {
-			int index = row * 3 + col;
-			float x = startX + col * (smallRectSize + spacing);
-			float y = startY + row * (smallRectSize + spacing);
-			DrawElevatedRectangleRounded((Rectangle){ x, y, smallRectSize, smallRectSize }, 0.2f, 10, SKYBLUE);
-
-			int textWidth = MeasureText(labels[index], 25);
-			DrawText(labels[index], x + smallRectSize / 2 - textWidth / 2, y + smallRectSize / 2 - 10, 25, DARKBLUE);
-		}
-	}
-
-	// Cube size
-	char res[4];
-	sprintf(res, "%d", size);
-	DrawElevatedRectangleRounded((Rectangle) {10, 730, 200, 75}, 0.3f, 10, LIGHTGRAY);
-	DrawText("-", 30, 750, 40, BLACK);
-	DrawText("+", 170, 750, 40, BLACK);
-	int textWidth = MeasureText(res, 40);
-	DrawText(res, 105 - textWidth / 2, 750, 40, BLACK);
-
-	// Shuffle button
-	DrawElevatedRectangleRounded((Rectangle) {10, 815, 200, 75}, 0.3f, 10, SKYBLUE);
-	textWidth = MeasureText("Shuffle", 40);
-	DrawText("Shuffle", 105 - textWidth / 2, 835, 40, DARKBLUE);
-}
-
-void ControlButtons(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clockWiseRotation) {
-	Vector2 mousePosition = GetMousePosition();
-	if (mousePosition.x <= 210 && mousePosition.x >= 10 && mousePosition.y <= 890 && mousePosition.y >= 815) {
-		// shuffle
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+	int key = GetKeyPressed();
+	switch (key) {
+		case KEY_RIGHT:
+			moveCursor(cube, -1, 0);
+			break;
+		case KEY_LEFT:
+			moveCursor(cube, 1, 0);
+			break;
+		case KEY_DOWN:
+			moveCursor(cube, 0, -1);
+			break;
+		case KEY_UP:
+			moveCursor(cube, 0, 1);
+			break;
+		case KEY_C:
+			cube->cursor->enabled = !cube->cursor->enabled;
+			break;
+		case KEY_R:
+			rightMove(cube, queue, clockwise);
+			break;
+		case KEY_L:
+			leftMove(cube, queue, clockwise);
+			break;
+		case KEY_U:
+			upMove(cube, queue, clockwise);
+			break;
+		case KEY_D:
+			downMove(cube, queue, clockwise);
+			break;
+		case KEY_F:
+			frontMove(cube, queue, clockwise);
+			break;
+		case KEY_B:
+			backMove(cube, queue, clockwise);
+			break;
+		case KEY_X:
+			rotateCubeX(cube, anim, clockwise);
+			break;
+		case KEY_Y:
+			rotateCubeY(cube, anim, clockwise);
+			break;
+		case KEY_W:
+			rotateCubeZ(cube, anim, clockwise);
+			break;
+		case KEY_SPACE:
 			shuffle(cube, queue);
-		}
-	} else if (mousePosition.x <= 50 && mousePosition.x >= 20 && mousePosition.y <= 785 && mousePosition.y >= 750) {
-		// size -
-		int size = cube->side;
-		if (size > 1) {
-			SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-			if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-				resetCube(cube, size - 1);
-				while (queue->start != NULL) {
-					popElement(queue);
-				}
-				anim->rotating = false;
-				anim->finished = false;
-			}
-		}
-	} else if (mousePosition.x <= 190 && mousePosition.x >= 160 && mousePosition.y <= 785 && mousePosition.y >= 750) {
-		// size +
-		int size = cube->side;
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			resetCube(cube, size + 1);
-			while (queue->start != NULL) {
-				popElement(queue);
-			}
-			anim->rotating = false;
-			anim->finished = false;
-		}
-	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 380 && mousePosition.y >= 305 && cube->selection->enabled) {
-		// cursor up
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			cube->selection->row++;
-			if (cube->selection->row >= cube->side){
-				cube->selection->row = 0;
-			}
-		}
-	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 465 && mousePosition.y >= 390 && cube->selection->enabled) {
-		// cursor right
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			cube->selection->column--;
-			if (cube->selection->column < 0){
-				cube->selection->column = cube->side - 1;
-			}
-		}
-	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 465 && mousePosition.y >= 390 && cube->selection->enabled) {
-		// cursor down
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			cube->selection->row--;
-			if (cube->selection->row < 0){
-				cube->selection->row = cube->side - 1;
-			}
-		}
-	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 465 && mousePosition.y >= 390 && cube->selection->enabled) {
-		// cursor left
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			cube->selection->column++;
-			if (cube->selection->column >= cube->side){
-				cube->selection->column = 0;
-			}
-		}
-	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1545 && mousePosition.y <= 550 && mousePosition.y >= 475) {
-		// Switch selection
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			cube->selection->enabled = ! cube->selection->enabled;
-		}
-	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1545 && mousePosition.y <= 635 && mousePosition.y >= 560) {
-		// Switch rotation
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			*clockWiseRotation = ! *clockWiseRotation;
-		}
-	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 720 && mousePosition.y >= 645) {
-		// Z
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			if (*clockWiseRotation == false) {
-				rotateCube(cube, DOWNWARDS, anim);
-			} else {
-				rotateCube(cube, UPWARDS, anim);
-			}
-		}
-	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 720 && mousePosition.y >= 645) {
-		// Y
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			if (*clockWiseRotation == false) {
-				rotateCube(cube, RIGHTWARDS, anim);
-			} else {
-				rotateCube(cube, LEFTWARDS, anim);
-			}
-		}
-	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 720 && mousePosition.y >= 645) {
-		// X
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			if (*clockWiseRotation == false) {
-				rotateCube(cube, COUNTERCLOCKWISE, anim);
-			} else {
-				rotateCube(cube, CLOCKWISE, anim);
-			}
-		}
-	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 805 && mousePosition.y >= 730) {
-		// F
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			Move move;
-			move.axis = (Vector3) {1, 0, 0};
-			move.layer = cube->side - 1;
-			if (*clockWiseRotation == false) {
-				move.direction = -1;
-				addElement(move, queue);
-			} else {
-				move.direction = 1;
-				addElement(move, queue);
-			}
-		}
-	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 805 && mousePosition.y >= 730) {
-		// U
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			Move move;
-			move.axis = (Vector3) {0, 1, 0};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->row;
-			} else {
-				move.layer = cube->side - 1;
-			}
-			if (*clockWiseRotation == false) {
-				move.direction = -1;
-				addElement(move, queue);
-			} else {
-				move.direction = 1;
-				addElement(move, queue);
-			}
-		}
-	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 805 && mousePosition.y >= 730) {
-		// B
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			Move move;
-			move.axis = (Vector3) {1, 0, 0};
-			move.layer = 0;
-			if (*clockWiseRotation == false) {
-				move.direction = 1;
-				addElement(move, queue);
-			} else {
-				move.direction = -1;
-				addElement(move, queue);
-			}
-		}
-	} else if (mousePosition.x <= 1790 && mousePosition.x >= 1715 && mousePosition.y <= 890 && mousePosition.y >= 815) {
-		// R
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			Move move;
-			move.axis = (Vector3) {0, 0, 1};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->column;
-			} else {
-				move.layer = 0;
-			}
-			if (*clockWiseRotation == false) {
-				move.direction = 1;
-				addElement(move, queue);
-			} else {
-				move.direction = -1;
-				addElement(move, queue);
-			}
-		}
-	} else if (mousePosition.x <= 1705 && mousePosition.x >= 1630 && mousePosition.y <= 890 && mousePosition.y >= 815) {
-		// D
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			Move move;
-			move.axis = (Vector3) {0, 1, 0};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->row;
-			} else {
-				move.layer = 0;
-			}
-			if (*clockWiseRotation == false) {
-				move.direction = 1;
-				addElement(move, queue);
-			} else {
-				move.direction = -1;
-				addElement(move, queue);
-			}
-		}
-	} else if (mousePosition.x <= 1620 && mousePosition.x >= 1545 && mousePosition.y <= 890 && mousePosition.y >= 815) {
-		// L
-		SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			Move move;
-			move.axis = (Vector3) {0, 0, 1};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->column;
-			} else {
-				move.layer = cube->side - 1;
-			}
-			if (*clockWiseRotation == false) {
-				move.direction = -1;
-				addElement(move, queue);
-			} else {
-				move.direction = 1;
-				addElement(move, queue);
-			}
-		}
-	} else {
-		SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+			break;
 	}
 }
 
-int main(int argc, char* argv[]) {
+int main() {
 	srand(time(NULL));
 	// Initialization
 	const int screenWidth = 1800;
@@ -369,172 +92,46 @@ int main(int argc, char* argv[]) {
 
 	// Rubiks cube:
 	Cube* cube;
-	if (argc > 1) {
-		cube = createCube(atoi(argv[1]));
-	} else {
-		cube = createCube(3);
-	}
+	cube = createCube(3);
 	RotationAnimation* rotationAnimation = malloc(sizeof(RotationAnimation));
 	rotationAnimation->rotating = false;
 	rotationAnimation->side = 0;
 	rotationAnimation->delay = 0;
 
 	MoveQueue* queue = initQueue();
-	bool clockWiseRotation = true;
+	bool clockwise = true;
+
+	Button* buttons = callButtons();
 
 	// Main game loop
 	while (!WindowShouldClose()) {
-		ControlButtons(cube, queue, rotationAnimation, &clockWiseRotation);
-		UpdateRotation(rotationAnimation);
-		UpdateSelection(cube);
-		if(IsKeyPressed(KEY_RIGHT)) {
-			cube->selection->column--;
-			if (cube->selection->column < 0){
-				cube->selection->column = cube->side - 1;
+		handleKeys(cube, queue, rotationAnimation, &clockwise);
+		Button* selected = NULL;
+		for (int i = 0; i < 19; i++) {
+			if (hovering(&buttons[i], cube->cursor->enabled)) {
+				selected = &buttons[i];
+				break;
 			}
 		}
-		if(IsKeyPressed(KEY_LEFT)) {
-			cube->selection->column++;
-			if (cube->selection->column >= cube->side){
-				cube->selection->column = 0;
+		if (selected != NULL) {
+			SetMouseCursor(4);
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+				selected->onClick(cube, queue, rotationAnimation, &clockwise);
 			}
+		} else {
+			SetMouseCursor(0);
 		}
-		if(IsKeyPressed(KEY_DOWN)) {
-			cube->selection->row--;
-			if (cube->selection->row < 0){
-				cube->selection->row = cube->side - 1;
-			}
-		}
-		if(IsKeyPressed(KEY_UP)) {
-			cube->selection->row++;
-			if (cube->selection->row >= cube->side){
-				cube->selection->row = 0;
-			}
-		}
-		if(IsKeyPressed(KEY_S)) {
-			cube->selection->enabled = !cube->selection->enabled;
-		}
-		if(IsKeyPressed(KEY_R)) {
-			Move move;
-			move.axis = (Vector3) {0, 0, 1};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->column;
-			} else {
-				move.layer = 0;
-			}
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				move.direction = 1;
-				addElement(move, queue);
-			} else {
-				move.direction = -1;
-				addElement(move, queue);
-			}
-		}
-		if(IsKeyPressed(KEY_L)) {
-			Move move;
-			move.axis = (Vector3) {0, 0, 1};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->column;
-			} else {
-				move.layer = cube->side - 1;
-			}
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				move.direction = -1;
-				addElement(move, queue);
-			} else {
-				move.direction = 1;
-				addElement(move, queue);
-			}
-		}
-		if(IsKeyPressed(KEY_U)) {
-			Move move;
-			move.axis = (Vector3) {0, 1, 0};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->row;
-			} else {
-				move.layer = cube->side - 1;
-			}
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				move.direction = -1;
-				addElement(move, queue);
-			} else {
-				move.direction = 1;
-				addElement(move, queue);
-			}
-		}
-		if(IsKeyPressed(KEY_D)) {
-			Move move;
-			move.axis = (Vector3) {0, 1, 0};
-			if (cube->selection->enabled) {
-				move.layer = cube->selection->row;
-			} else {
-				move.layer = 0;
-			}
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				move.direction = 1;
-				addElement(move, queue);
-			} else {
-				move.direction = -1;
-				addElement(move, queue);
-			}
-		}
-		if(IsKeyPressed(KEY_F)) {
-			Move move;
-			move.axis = (Vector3) {1, 0, 0};
-			move.layer = cube->side - 1;
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				move.direction = -1;
-				addElement(move, queue);
-			} else {
-				move.direction = 1;
-				addElement(move, queue);
-			}
-		}
-		if(IsKeyPressed(KEY_B)) {
-			Move move;
-			move.axis = (Vector3) {1, 0, 0};
-			move.layer = 0;
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				move.direction = 1;
-				addElement(move, queue);
-			} else {
-				move.direction = -1;
-				addElement(move, queue);
-			}
-		}
-		if(IsKeyPressed(KEY_X)) {
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				rotateCube(cube, COUNTERCLOCKWISE, rotationAnimation);
-			} else {
-				rotateCube(cube, CLOCKWISE, rotationAnimation);
-			}
-		}
-		if(IsKeyPressed(KEY_Y)) {
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				rotateCube(cube, RIGHTWARDS, rotationAnimation);
-			} else {
-				rotateCube(cube, LEFTWARDS, rotationAnimation);
-			}
-		}
-		if(IsKeyPressed(KEY_W)) {
-			if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
-				rotateCube(cube, DOWNWARDS, rotationAnimation);
-			} else {
-				rotateCube(cube, UPWARDS, rotationAnimation);
-			}
-		}
-		if(IsKeyPressed(KEY_SPACE)) {
-			shuffle(cube, queue);
-		}
+		updateRotation(rotationAnimation);
+		updateCursor(cube);
 
 		if (rotationAnimation->delay == 0 && queue->start != NULL) {
 			rotationAnimation->delay = 7;
-			StartRotation(rotationAnimation, popElement(queue));
+			startRotation(rotationAnimation, popElement(queue));
 		}
 
 		if (rotationAnimation->finished) {
 			rotationAnimation->finished = false;
-			DecodeMove(cube, rotationAnimation);
+			decodeMove(cube, rotationAnimation);
 		}
 
 		if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
@@ -566,8 +163,8 @@ int main(int argc, char* argv[]) {
 
 		float scroll = GetMouseWheelMove();
 		distance -= scroll * cube->side;
-		if (distance <  cube->side * 1.2f)
-			distance = cube->side * 1.2f;
+		if (distance <  cube->side * 2.3f)
+			distance = cube->side * 2.3f;
 		if (distance > cube->side * 6.0f)
 			distance = cube->side * 6.0f;
 
@@ -588,16 +185,17 @@ int main(int argc, char* argv[]) {
 
 			BeginMode3D(camera);
 
-			DrawRubiksCube(cube, rotationAnimation, yaw, pitch);
+			drawRubiksCube(cube, rotationAnimation, yaw, pitch);
 
 			EndMode3D();
 
 			DrawFPS(20, 20);
 
-			DrawOverlay(cube->side, clockWiseRotation, cube->selection->enabled);
+			for (int i = 0; i < 19; i++) {
+				drawButton(&buttons[i], cube->side, clockwise, cube->cursor->enabled);
+			}
 
-			DrawQueue(queue);
-
+			drawQueue(queue);
 		}
 		EndDrawing();
 	}
