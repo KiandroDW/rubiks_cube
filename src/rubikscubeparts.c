@@ -1,5 +1,4 @@
 #include "rubikscubeparts.h"
-#include <stdio.h>
 #include <stdlib.h>
 
 Block* createBlock(Vector3 position, int side) {
