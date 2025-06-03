@@ -1,6 +1,7 @@
-# rubiks cube
+# Rubiks cube
 A rubiks cube visualiser in C using raylib.
-![Image of a 3x3x3 rubiks cube being shuffeled](images/example.png)
+
+![Screenshot of a 3x3x3 rubiks cube being shuffeled](images/example.png)
 
 ## How to install
 Make sure you have `gcc` and `make` installed for your distro.
@@ -52,9 +53,9 @@ KNOWN ISSUE: the keys are currently using `AZERTY` layout. If you are on a
 `QWERTY` keyboard, you need to press `W` instead of `Z`.
 
 ## Roadmap
-[x] working rubiks cubes
-[ ] improve shuffle algorithm + fix crash with 1x1x1
-[ ] create a solver
+- [x] Working rubiks cubes
+- [ ] Improve shuffle algorithm + fix crash with 1x1x1
+- [ ] Create a solver
 
 ## Screenshots
 ![screenshot of the starting screen](images/start.png)
