@@ -1,36 +1,67 @@
 #include "rubikscube.h"
+#include "queue.h"
 #include "raylib.h"
 #include "rotatecube.h"
 #include "rubikscubeparts.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void shuffle(Cube* cube, MoveQueue* queue) {
-	int previous_axis = -1;
-	int previous_layer = -1;
+	if (cube->side == 1) {
+		return;
+	}
+	int8_t* moves_done = malloc(cube->side * sizeof(int8_t));
+	memset(moves_done, 0, cube->side * sizeof(int8_t));
+	int count_moves = 0;
 	int chosen_axis;
 	int chosen_layer;
 	int chosen_direction;
+	int previous_axis = -1;
 	Vector3 chosen_vector;
 
 	for (int i = 0; i < cube->side * 10; i++) {
 		chosen_axis = rand() % 3;
 		chosen_layer = rand() % cube->side;
-		while ((chosen_axis == previous_axis && chosen_layer == previous_layer) || (cube->side % 2 == 1 && chosen_layer == (cube->side-1) / 2)) {
+
+		// Make sure no more than 2 moves on same layer, max 50% of layers should be turned and no middle layer on odd cubes
+		while (((abs(moves_done[chosen_layer] == 2) || count_moves >= cube->side / 2) && chosen_axis == previous_axis) || (cube->side % 2 == 1 && chosen_layer == (cube->side - 1) / 2)) {
 			chosen_axis = rand() % 3;
 			chosen_layer = rand() % cube->side;
 		}
+
+		// Make sure no two canceling moves can be done
+		if (moves_done[chosen_layer] == 0) {
+			chosen_direction = rand() % 2;
+			if (chosen_direction == 0) {
+				chosen_direction = -1;
+			}
+		} else {
+			chosen_direction = moves_done[chosen_layer];
+		}
+
+		// Update data to reflect the current move
+		if (chosen_axis == previous_axis) {
+			// Only count the first time a move has been done
+			if (moves_done[chosen_layer] == 0) {
+				count_moves++;
+			}
+			moves_done[chosen_layer] += chosen_direction;
+		} else {
+			// reset
+			memset(moves_done, 0, cube->side * sizeof(int8_t));
+			moves_done[chosen_layer] = chosen_direction;
+			count_moves = 1;
+			previous_axis = chosen_axis;
+		}
+
 		if (chosen_axis == 0)
 			chosen_vector = (Vector3) {1, 0, 0};
 		if (chosen_axis == 1)
 			chosen_vector = (Vector3) {0, 1, 0};
 		if (chosen_axis == 2)
 			chosen_vector = (Vector3) {0, 0, 1};
-
-		chosen_direction = rand() % 2;
-		if (chosen_direction == 0) {
-			chosen_direction = 1;
-		}
 
 		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
 		addElement(selected_move, queue);
@@ -337,7 +368,7 @@ void downMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 1, 0};
 	if (cube->cursor->enabled) {
-		move.layer = cube->cursor->column;
+		move.layer = cube->cursor->row;
 	} else {
 		move.layer = 0;
 	}
@@ -354,7 +385,7 @@ void upMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 1, 0};
 	if (cube->cursor->enabled) {
-		move.layer = cube->cursor->column;
+		move.layer = cube->cursor->row;
 	} else {
 		move.layer = cube->side - 1;
 	}
