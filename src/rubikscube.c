@@ -12,6 +12,9 @@ void shuffle(Cube* cube, MoveQueue* queue) {
 	int chosen_layer;
 	int chosen_direction;
 	Vector3 chosen_vector;
+	if (cube->side == 1) {
+		return;
+	}
 
 	for (int i = 0; i < cube->side * 10; i++) {
 		chosen_axis = rand() % 3;
@@ -34,6 +37,8 @@ void shuffle(Cube* cube, MoveQueue* queue) {
 
 		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
 		addElement(selected_move, queue);
+		previous_layer = chosen_layer;
+		previous_axis = chosen_axis;
 	}
 }
 
@@ -337,7 +342,7 @@ void downMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 1, 0};
 	if (cube->cursor->enabled) {
-		move.layer = cube->cursor->column;
+		move.layer = cube->cursor->row;
 	} else {
 		move.layer = 0;
 	}
@@ -354,7 +359,7 @@ void upMove(Cube* cube, MoveQueue* queue, bool* clockwise) {
 	Move move;
 	move.axis = (Vector3) {0, 1, 0};
 	if (cube->cursor->enabled) {
-		move.layer = cube->cursor->column;
+		move.layer = cube->cursor->row;
 	} else {
 		move.layer = cube->side - 1;
 	}
