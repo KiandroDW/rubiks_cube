@@ -54,7 +54,7 @@ KNOWN ISSUE: the keys are currently using `AZERTY` layout. If you are on a
 
 ## Roadmap
 - [x] Working rubiks cubes
-- [ ] Improve shuffle algorithm + fix crash with 1x1x1
+- [x] Improve shuffle algorithm + fix crash with 1x1x1
 - [ ] Create a solver
 
 ## Screenshots
