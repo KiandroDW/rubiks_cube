@@ -47,11 +47,11 @@ typedef enum {
 	UPWARDS
 } Rotation;
 
-
 Block* createBlock(Vector3 position, int side);
 Cube* createCube(int side);
 void resetCube(Cube* cube, int side);
 void destroyCube(Cube* cube);
+Cube* copyCube(Cube* cube);
 
 void updateCursor(Cube* cube);
 #endif

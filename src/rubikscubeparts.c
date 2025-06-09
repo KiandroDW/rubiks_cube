@@ -18,7 +18,7 @@ Block* createBlock(Vector3 position, int side) {
 	if (position.y == 0) {
 		colors.down = YELLOW;
 	}
-	if (position.z == side - 1) {
+	if (position.z == side-1) {
 		colors.left = ORANGE;
 	}
 	if (position.z == 0) {
@@ -94,3 +94,24 @@ void destroyCube(Cube *cube) {
 	free(cube);
 }
 
+Block* copyBlock(Block* block) {
+	Block* newBlock = malloc(sizeof(Block));
+	newBlock->colors = block->colors;
+	return newBlock;
+}
+
+Cube* copyCube(Cube* cube) {
+	Cube* cube2 = malloc(sizeof(Cube));
+	cube2->side = cube->side;
+	cube2->blocks = malloc(cube->side * cube->side * cube->side * sizeof(Block*));
+	for (int i = 0; i < cube->side; i++) {
+		for (int j = 0; j < cube->side; j++) {
+			for (int k = 0; k < cube->side; k ++) {
+				Vector3 pos = {i, j, k};
+				ELEMENTAT(cube2, i, j, k) = copyBlock(ELEMENTAT(cube, i, j, k));
+			}
+		}
+	}
+	cube2->cursor = NULL;
+	return cube2;
+}
