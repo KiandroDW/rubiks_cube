@@ -15,7 +15,7 @@ void startRotation(RotationAnimation* rotationAnimation, Move move) {
 
 void updateRotation(RotationAnimation *rotationAnimation) {
 	if (rotationAnimation->rotating) {
-		rotationAnimation->angle += rotationAnimation->direction * 5.0f;
+		rotationAnimation->angle += rotationAnimation->direction * 30.0f;
 		if (rotationAnimation->angle >= 90.0f || rotationAnimation->angle <= -90.0f) {
 			rotationAnimation->rotating = false;
 			rotationAnimation->finished = true;

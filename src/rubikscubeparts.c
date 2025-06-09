@@ -26,6 +26,7 @@ Block* createBlock(Vector3 position, int side) {
 	}
 	Block* block = malloc(sizeof(Block));
 	block->colors = colors;
+	block->correctPos = position;
 	return block;
 }
 
@@ -97,6 +98,7 @@ void destroyCube(Cube *cube) {
 Block* copyBlock(Block* block) {
 	Block* newBlock = malloc(sizeof(Block));
 	newBlock->colors = block->colors;
+	newBlock->correctPos = block->correctPos;
 	return newBlock;
 }
 

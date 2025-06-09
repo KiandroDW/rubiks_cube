@@ -66,6 +66,7 @@ void shuffle(Cube* cube, MoveQueue* queue) {
 		Move selected_move = (Move) {chosen_vector, chosen_layer, chosen_direction};
 		addElement(selected_move, queue);
 	}
+	free(moves_done);
 }
 
 int rotateBlock(Block* block,  Rotation rotation) {

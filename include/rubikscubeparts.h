@@ -24,6 +24,7 @@ typedef struct {
 
 typedef struct {
 	Colors colors;
+	Vector3 correctPos;
 } Block;
 
 typedef struct {

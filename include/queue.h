@@ -13,11 +13,13 @@ typedef struct MoveQueueElement{
 
 typedef struct {
 	MoveQueueElement* start;
+	MoveQueueElement* last;
 } MoveQueue;
 
 static MoveQueue* initQueue() {
 	MoveQueue* queue = malloc(sizeof(MoveQueue));
 	queue->start = NULL;
+	queue->last = NULL;
 	return queue;
 }
 
@@ -36,6 +38,7 @@ static void addElement(Move value, MoveQueue* queue) {
 	} else {
 		current->next = newQueue;
 	}
+	queue->last = newQueue;
 }
 
 static Move popElement(MoveQueue* queue) {
@@ -51,8 +54,10 @@ static Move popElement(MoveQueue* queue) {
 }
 
 static void _freeElement(MoveQueueElement* element) {
-	_freeElement(element->next);
-	free(element);
+	if (element != NULL) {
+		_freeElement(element->next);
+		free(element);
+	}
 }
 
 static void freeQueue(MoveQueue* queue) {

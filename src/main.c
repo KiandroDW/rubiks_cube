@@ -5,6 +5,7 @@
 #include "rotatecube.h"
 #include "rubikscube.h"
 #include "rubikscubeparts.h"
+#include "solver.h"
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
@@ -60,6 +61,9 @@ void handleKeys(Cube* cube, MoveQueue* queue, RotationAnimation* anim, bool* clo
 		case KEY_SPACE:
 			shuffle(cube, queue);
 			break;
+		case KEY_S:
+			solveCube(cube, queue);
+			break;
 	}
 }
 
@@ -97,6 +101,7 @@ int main() {
 	rotationAnimation->rotating = false;
 	rotationAnimation->side = 0;
 	rotationAnimation->delay = 0;
+	rotationAnimation->finished = false;
 
 	MoveQueue* queue = initQueue();
 	bool clockwise = true;
@@ -125,7 +130,7 @@ int main() {
 		updateCursor(cube);
 
 		if (rotationAnimation->delay == 0 && queue->start != NULL) {
-			rotationAnimation->delay = 7;
+			rotationAnimation->delay = 3;
 			startRotation(rotationAnimation, popElement(queue));
 		}
 
@@ -202,5 +207,7 @@ int main() {
 
 	CloseWindow();
 	destroyCube(cube);
+	freeQueue(queue);
+	free(rotationAnimation);
 	return 0;
 }

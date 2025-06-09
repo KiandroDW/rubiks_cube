@@ -1,7 +1,10 @@
 all:
-	gcc src/*.c -I include/ -lraylib -lm
+	gcc src/*.c -I include/ -lraylib -lm src/solvers/blind.c
 
 run: all
 	./a.out
 
-.PHONEY: all run
+debug:
+	gcc -g src/*.c -I include/ -lraylib -lm src/solvers/blind.c
+
+.PHONEY: all run debug
