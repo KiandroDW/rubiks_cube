@@ -48,6 +48,8 @@ run: all
 
 .PHONEY: all run
 ```
+(Don't forget to update `compile_commands.json` to include those new
+include-paths, either manual or with a tool like `bear` :: `bear -- make`.)
 
 
 
