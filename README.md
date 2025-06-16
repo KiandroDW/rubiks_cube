@@ -22,7 +22,36 @@ sudo apt install build-essential make
 #### Other:
 Check online.
 
-Next install the `raylib` library. You can follow the guide on the [raylib github](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux)
+<br>
+
+Next install the `raylib` library.
+You can try to install `raylib` with your package manager,
+follow the guide on the [raylib github](https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux),
+or follow these steps:
+- download a raylib release from [raylib github](https://github.com/raysan5/raylib/releases/)
+- move it to the `include/` folder and extract it
+- modify the `Makefile` like this:
+```make
+all:
+    # Tell gcc to look inside the raylib folder for header files and lib files
+	gcc src/*.c \
+		-I include/ \
+		-I include/raylib-5.5_linux_amd64/include/ \
+		-L include/raylib-5.5_linux_amd64/lib/ \
+		-lraylib \
+		-lm
+
+run: all
+	# As raylib is dynamically linked, we need to tell our environment where
+	# to find raylib to load it at runtime
+	LD_LIBRARY_PATH=include/raylib-5.5_linux_amd64/lib ./a.out
+
+.PHONEY: all run
+```
+(Don't forget to update `compile_commands.json` to include those new
+include-paths, either manual or with a tool like `bear` :: `bear -- make`.)
+
+
 
 ## How to run
 Just run the command
